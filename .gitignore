@@ -1,0 +1,16 @@
+# Dossiers de dépendances
+node_modules/
+
+# Variables d'environnement (Secrets)
+.env
+
+# Fichiers de logs
+*.log
+npm-debug.log*
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
