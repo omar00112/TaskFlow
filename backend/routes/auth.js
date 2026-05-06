@@ -8,6 +8,11 @@ const bcrypt = require('bcryptjs');
 router.post('/register', async (req, res) => {
     try {
         const { fullName, email, password } = req.body;
+
+        // vérifier si l'email existe déjà
+        const existingUser = await User.findOne({ email });
+        if (existingUser) return res.status(400).json({ message: "Email déjà utilisé" });
+
         const user = new User({ fullName, email, password });
         await user.save();
         res.status(201).json({ message: "Utilisateur créé avec succès" });
@@ -15,7 +20,6 @@ router.post('/register', async (req, res) => {
         res.status(400).json({ error: err.message });
     }
 });
-
 // route de connexion
 router.post('/login', async (req, res) => {
     try {
