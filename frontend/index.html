@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Authentification</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>TaskFlow</h1>
+
+        <!-- Formulaire de Connexion -->
+        <div id="login-form">
+            <h2>Connexion</h2>
+            <input type="email" id="login-email" placeholder="Email" required>
+            <input type="password" id="login-password" placeholder="Mot de passe" required>
+            <button onclick="login()">Se connecter</button>
+            <p>Pas de compte? <span onclick="showRegister()">S'inscrire</span></p>
+        </div>
+
+        <!-- Formulaire d'Inscription -->
+        <div id="register-form" style="display:none">
+            <h2>Inscription</h2>
+            <input type="text" id="register-name" placeholder="Nom complet" required>
+            <input type="email" id="register-email" placeholder="Email" required>
+            <input type="password" id="register-password" placeholder="Mot de passe" required>
+            <button onclick="register()">S'inscrire</button>
+            <p>Déjà un compte? <span onclick="showLogin()">Se connecter</span></p>
+        </div>
+
+        <!-- Dashboard après connexion -->
+        <div id="dashboard" style="display:none">
+            <h2>Bienvenue sur TaskFlow!</h2>
+            <p>Vous êtes maintenant connecté.</p>
+            <button onclick="logout()" class="btn-logout">Se déconnecter</button>
+        </div>
+
+        <!-- Message d'erreur ou de succès -->
+        <p id="message"></p>
+    </div>
+
+    <!-- Axios via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    <script>
+        // Configuration de base pour Axios (URL de votre backend)
+        const API_URL = 'http://localhost:3000/api/auth';
+
+        // Vérifier la session au chargement
+        window.onload = function() {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Configurer le header par défaut pour toutes les requêtes futures
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                showDashboard();
+            }
+        };
+
+        // --- Fonctions d'Affichage ---
+
+        function showLogin() {
+            clearMessage();
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showRegister() {
+            clearMessage();
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'block';
+            document.getElementById('dashboard').style.display = 'none';
+        }
+
+        function showDashboard() {
+            clearMessage();
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('register-form').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        function displayMessage(text, isSuccess = false) {
+            const msgElement = document.getElementById('message');
+            msgElement.innerText = text;
+            msgElement.className = isSuccess ? 'success' : 'error';
+        }
+
+        function clearMessage() {
+            document.getElementById('message').innerText = '';
+            document.getElementById('message').className = '';
+        }
+
+        // --- Fonctions Logiques ---
+
+        async function register() {
+            const fullName = document.getElementById('register-name').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+
+            // Validation basique
+            if (!fullName || !email || !password) {
+                return displayMessage("Tous les champs sont obligatoires");
+            }
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return displayMessage("Format d'email invalide");
+            }
+
+            if (password.length < 6) {
+                return displayMessage("Le mot de passe doit faire au moins 6 caractères");
+            }
+
+            try {
+                const res = await axios.post(`${API_URL}/register`, { fullName, email, password });
+                displayMessage(res.data.message || "Inscription réussie !", true);
+                setTimeout(showLogin, 2000); // Redirige vers login après 2 secondes
+            } catch (err) {
+                const errorMsg = err.response?.data?.message || err.response?.data?.error || "Erreur lors de l'inscription";
+                displayMessage(errorMsg);
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            if (!email || !password) {
+                return displayMessage("Veuillez remplir tous les champs");
+            }
+
+            try {
+                const res = await axios.post(`${API_URL}/login`, { email, password });
+                
+                // Sauvegarde
+                localStorage.setItem('token', res.data.token);
+                axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.token;
+                
+                showDashboard();
+            } catch (err) {
+                const errorMsg = err.response?.data?.message || "Identifiants incorrects";
+                displayMessage(errorMsg);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            delete axios.defaults.headers.common['Authorization'];
+            showLogin();
+        }
+    </script>
+</body>
+</html>
