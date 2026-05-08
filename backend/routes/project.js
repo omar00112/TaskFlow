@@ -74,7 +74,13 @@ router.get("/", auth, async (req, res) => {
 // @access Privé
 router.get("/:id", auth, async (req, res) => {
   try {
-    const project = await Project.findOne({ _id: req.params.id, owner: req.user.id });
+    const project = await Project.findOne({
+  _id: req.params.id,
+  $or: [
+    { owner: req.user.id },
+    { members: req.user.id }
+  ]
+});
     if (!project) {
       return res.status(404).json({ msg: "Projet non trouvé" });
     }
@@ -141,7 +147,11 @@ router.post('/:id/members', auth, async (req, res) => {
     // trouver l'utilisateur par email
     const userToAdd = await User.findOne({ email: req.body.email })
     if (!userToAdd) return res.status(404).json({ msg: 'Utilisateur non trouvé' })
-
+    if (userToAdd._id.toString() === req.user.id) {
+  return res.status(400).json({
+    msg: "Owner is already part of the project"
+  })
+}
     // verifier qu'il est deja un membre
     if (project.members.includes(userToAdd._id))
       return res.status(400).json({ msg: 'Membre déjà dans le projet' })

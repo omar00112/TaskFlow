@@ -47,7 +47,23 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
         message: "Project not found",
       });
     }
+    
+    if (assignedTo) {
+  const projectData = await Project.findById(project)
 
+  const allowed =
+    projectData.owner.toString() === assignedTo ||
+    projectData.members.some(
+      m => m.toString() === assignedTo
+    )
+
+  if (!allowed) {
+    return res.status(400).json({
+      message: "Assigned user is not part of this project"
+    })
+  }
+}
+    
     const task = await Task.create({
       title,
       description,
