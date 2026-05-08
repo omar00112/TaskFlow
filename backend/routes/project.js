@@ -74,6 +74,11 @@ router.get("/", auth, async (req, res) => {
 // @access Privé
 router.get("/:id", auth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const project = await Project.findOne({
   _id: req.params.id,
   $or: [
@@ -99,6 +104,11 @@ router.put("/:id", auth, async (req, res) => {
   const projectFields = { title, description, dueDate, status };
 
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     let project = await Project.findOne({ _id: req.params.id, owner: req.user.id });
     if (!project) {
       return res.status(404).json({ msg: "Projet non trouvé" });
@@ -123,6 +133,11 @@ router.put("/:id", auth, async (req, res) => {
 // @access Privé
 router.delete("/:id", auth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const project = await Project.findOne({ _id: req.params.id, owner: req.user.id });
     if (!project) {
       return res.status(404).json({ msg: "Projet non trouvé" });
@@ -140,6 +155,11 @@ router.delete("/:id", auth, async (req, res) => {
 // POST /api/projects/:id/members — invite un membre par email
 router.post('/:id/members', auth, async (req, res) => {
   try {
+     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     // verifier que qui invite est le owner
     const project = await Project.findOne({ _id: req.params.id, owner: req.user.id })
     if (!project) return res.status(404).json({ msg: 'Projet non trouvé ou accès refusé' })
@@ -167,6 +187,16 @@ router.post('/:id/members', auth, async (req, res) => {
 // DELETE /api/projects/:id/members/:userId — supprimer un membre
 router.delete('/:id/members/:userId', auth, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     // verifier que le membre qui supprime est le onwer
     const project = await Project.findOne({ _id: req.params.id, owner: req.user.id })
     if (!project) return res.status(404).json({ msg: 'Projet non trouvé ou accès refusé' })

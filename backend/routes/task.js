@@ -4,6 +4,7 @@ const validateTask = require('../middleware/validateTask')
 const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
+const mongoose = require("mongoose");
 
 // CREATE TASK
 router.post("/", authMiddleware,validateTask, async (req, res) => {
@@ -104,6 +105,11 @@ router.get(
 // GET ONE TASK
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const task = await Task.findById(req.params.id).populate(
       "assignedTo",
       "fullName email"
@@ -126,6 +132,11 @@ router.get("/:id", authMiddleware, async (req, res) => {
 // UPDATE TASK
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
+     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -152,6 +163,11 @@ router.put("/:id", authMiddleware, async (req, res) => {
 // UPDATE ONLY STATUS
 router.patch("/:id/status", authMiddleware, async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const { status } = req.body;
 
     const validStatus = ["todo", "in-progress", "done"];
@@ -188,6 +204,11 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
 // DELETE TASK
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
+     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+  return res.status(400).json({
+    message: "Invalid ID"
+  })
+}
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
 
     if (!deletedTask) {
