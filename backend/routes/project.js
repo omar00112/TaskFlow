@@ -167,7 +167,11 @@ router.post('/:id/members', auth, async (req, res) => {
     // trouver l'utilisateur par email
     const userToAdd = await User.findOne({ email: req.body.email })
     if (!userToAdd) return res.status(404).json({ msg: 'Utilisateur non trouvé' })
-    if (userToAdd._id.toString() === req.user.id) {
+    if (
+  project.members.some(
+    member => member.toString() === userToAdd._id.toString()
+  )
+) {
   return res.status(400).json({
     msg: "Owner is already part of the project"
   })
