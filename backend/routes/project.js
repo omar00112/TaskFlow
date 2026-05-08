@@ -26,7 +26,9 @@ router.post("/", auth, async (req, res) => {
     res.status(201).json(project);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({
+  error: err.message
+})
   }
 });
 
@@ -92,7 +94,9 @@ router.get("/:id", auth, async (req, res) => {
     res.json(project);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({
+  error: err.message
+})
   }
 });
 
@@ -135,7 +139,9 @@ router.put("/:id", auth, async (req, res) => {
     res.json(project);
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({
+  error: err.message
+})
   }
 });
 
@@ -159,7 +165,9 @@ router.delete("/:id", auth, async (req, res) => {
     res.json({ msg: "Projet supprimé" });
   } catch (err) {
     console.error(err.message);
-    res.status(500).send("Server error");
+    res.status(500).json({
+  error: err.message
+})
   }
 });
 
