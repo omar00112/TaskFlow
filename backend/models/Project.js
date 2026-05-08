@@ -24,6 +24,12 @@ const ProjectSchema = new mongoose.Schema({
     enum: ["active", "paused", "archived"], // actif, en pause, archivé
     default: "active",
   },
+  members: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+],
 }, { timestamps: true }); // Ajoute automatiquement les champs createdAt et updatedAty
 
 
