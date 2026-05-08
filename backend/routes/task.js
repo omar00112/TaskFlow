@@ -6,7 +6,7 @@ const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 
 // CREATE TASK
-router.post("/", authMiddleware, async (req, res) => {
+router.post("/", authMiddleware,validateTask, async (req, res) => {
   try {
     const {
       title,
