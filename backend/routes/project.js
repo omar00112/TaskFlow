@@ -37,24 +37,35 @@ router.get("/", auth, async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
-    const skip = (page - 1) * limit;
 
-    const projects = await Project.find({ owner: req.user.id })
-      .sort({ createdAt: -1 }) // Tri par date de création, du plus récent au plus ancien
-      .skip(skip)
+    const filter = {
+      $or: [
+        { owner: req.user.id },
+        { members: req.user.id }
+      ]
+    };
+
+    const projects = await Project.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
       .limit(limit);
 
-    const totalProjects = await Project.countDocuments({ owner: req.user.id });
+    const totalProjects =
+      await Project.countDocuments(filter);
 
     res.json({
-      data: projects,
-      total: totalProjects,
+      projects,
+      totalProjects,
       page,
       totalPages: Math.ceil(totalProjects / limit),
     });
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send("Server error");
+    console.error(err);
+
+    res.status(500).json({
+      error: err.message
+    });
   }
 });
 
