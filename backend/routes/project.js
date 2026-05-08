@@ -101,7 +101,18 @@ router.get("/:id", auth, async (req, res) => {
 // @access  Private
 router.put("/:id", auth, async (req, res) => {
   const { title, description, dueDate, status } = req.body;
-  const projectFields = { title, description, dueDate, status };
+  const projectFields = {};
+  if (title !== undefined)
+    projectFields.title = title
+
+  if (description !== undefined)
+    projectFields.description = description
+
+  if (dueDate !== undefined)
+    projectFields.dueDate = dueDate
+
+  if (status !== undefined)
+    projectFields.status = status
 
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {

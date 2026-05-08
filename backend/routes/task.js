@@ -27,20 +27,6 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
 
     const validPriority = ["low", "medium", "high"];
 
-    if (!validPriority.includes(priority)) {
-      return res.status(400).json({
-        message: "Invalid priority",
-      });
-    }
-
-    const validStatus = ["todo", "in-progress", "done"];
-
-    if (status && !validStatus.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid status",
-      });
-    }
-
     const projectExists = await Project.findById(project);
 
     if (!projectExists) {
