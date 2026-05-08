@@ -143,4 +143,22 @@ router.post('/:id/members', auth, async (req, res) => {
   }
 })
 
+// DELETE /api/projects/:id/members/:userId — supprimer un membre
+router.delete('/:id/members/:userId', auth, async (req, res) => {
+  try {
+    // verifier que le membre qui supprime est le onwer
+    const project = await Project.findOne({ _id: req.params.id, owner: req.user.id })
+    if (!project) return res.status(404).json({ msg: 'Projet non trouvé ou accès refusé' })
+
+    // supprimer l'utilisateur de la liste des membres
+    project.members = project.members.filter(
+      m => m.toString() !== req.params.userId
+    )
+    await project.save()
+    res.json(project)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router;
