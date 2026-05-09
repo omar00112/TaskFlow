@@ -7,8 +7,11 @@ const bcrypt = require('bcryptjs');
 // route d'inscription
 router.post('/register', async (req, res) => {
     try {
-        const { fullName, email, password } = req.body;
-
+        let { fullName, email, password } = req.body;
+        email=email.toLowerCase();
+        if(password.length < 6){
+	  return res.status(400).json({message: "le  mot de passe doit contenir au minimun 6 charactères"})
+}
         // vérifier si l'email existe déjà
         const existingUser = await User.findOne({ email });
         if (existingUser) return res.status(400).json({ message: "Email déjà utilisé" });
