@@ -5,6 +5,8 @@ const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
+const Notification = require("../models/Notification");
+
 
 // CREATE TASK
 router.post("/", authMiddleware,validateTask, async (req, res) => {
@@ -208,6 +210,17 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
         runValidators: true,
       }
     );
+
+        // Créer une notification pour la personne assignée
+    if (updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
+        await Notification.create({
+            userId: updatedTask.assignedTo,
+            message: `La tâche "${updatedTask.title}" a changé de statut : ${status}`,
+            taskId: updatedTask._id,
+            projectId: updatedTask.project,
+            type: 'status_changed'
+        });
+    }
 
     if (!updatedTask) {
       return res.status(404).json({
