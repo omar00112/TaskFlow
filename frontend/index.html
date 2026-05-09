@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow - Authentification</title>
     <link rel="stylesheet" href="style.css">
+
 </head>
 <body>
 
@@ -30,12 +31,29 @@
             <p>Déjà un compte? <span onclick="showLogin()">Se connecter</span></p>
         </div>
 
-        <!-- Dashboard après connexion -->
-        <div id="dashboard" style="display:none">
-            <h2>Bienvenue sur TaskFlow!</h2>
-            <p>Vous êtes maintenant connecté.</p>
-            <button onclick="logout()" class="btn-logout">Se déconnecter</button>
+    <!-- Dashboard après connexion -->
+<div id="dashboard" style="display:none">
+    <div class="header-right">
+        <div class="notification-area">
+            <div id="notificationIcon" class="bell-icon">
+                🔔
+                <span id="notificationBadge" class="badge" style="display: none;">0</span>
+            </div>
+            <div id="notificationDropdown" class="dropdown">
+                <div class="dropdown-header">
+                    Notifications
+                    <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+                </div>
+                <div id="notificationList" class="dropdown-list">
+                    <div class="notification-item">Aucune notification</div>
+                </div>
+            </div>
         </div>
+        <button onclick="logout()" class="btn-logout logout-btn">Se déconnecter</button>
+    </div>
+    <h2>Bienvenue sur TaskFlow!</h2>
+    <p>Vous êtes maintenant connecté.</p>
+</div>
 
         <!-- Message d'erreur ou de succès -->
         <p id="message"></p>
@@ -43,6 +61,7 @@
 
     <!-- Axios via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="js/notifications.js"></script>
 
     <script>
         // Configuration de base pour Axios (URL de votre backend)
