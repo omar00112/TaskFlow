@@ -5,12 +5,12 @@ const validateTask = (req, res, next) => {
     return res.status(400).json({ message: 'Le titre est obligatoire' })
   }
 
-  const validPriorities = ['low', 'medium', 'high']
+  const validPriorities = ['basse', 'moyenne', 'haute']
   if (priority && !validPriorities.includes(priority)) {
     return res.status(400).json({ message: 'Priorité invalide' })
   }
 
-  const validStatuses = ['todo', 'in-progress', 'done']
+  const validStatuses = ['à faire', 'en cours', 'terminé']
   if (status && !validStatuses.includes(status)) {
     return res.status(400).json({ message: 'Statut invalide' })
   }

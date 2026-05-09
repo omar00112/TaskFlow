@@ -3,6 +3,8 @@ const router = express.Router();
 const auth = require("../middleware/authMiddleware"); //authentication middleware
 const Project = require("../models/Project");
 const User = require("../models/User");
+const Task = require("../models/Task");
+const mongoose = require('mongoose');
 
 // @route POST /api/projects
 // @desc Créer un nouveau projet
@@ -192,7 +194,7 @@ router.post('/:id/members', auth, async (req, res) => {
   )
 ) {
   return res.status(400).json({
-    msg: "Owner is already part of the project"
+    msg: "l'utilisateur est déjà un membre"
   })
 }
     // verifier qu'il est deja un membre
@@ -235,4 +237,35 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
   }
 })
 
-module.exports = router;
+router.get("/:id/tasks", auth, async (req, res) => {
+  try {
+
+    const project = await Project.findOne({
+      _id: req.params.id,
+      $or: [
+        { owner: req.user.id },
+        { members: req.user.id }
+      ]
+    });
+
+    if (!project) {
+      return res.status(403).json({
+        message: "Accés refusé"
+      });
+    }
+
+    const tasks = await Task.find({
+      project: req.params.id
+    }).populate(
+      "assignedTo",
+      "fullName email"
+    );
+
+    res.json(tasks);
+
+  } catch (err) {
+    res.status(500).json({
+      error: err.message
+    });
+  }
+});module.exports = router;
