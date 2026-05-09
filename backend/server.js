@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const taskRoutes = require("./routes/task");
+const notificationRoutes = require('./routes/notifications');
 require('dotenv').config();
 
 // importer la connexion DB et les routes
@@ -19,6 +20,8 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes); // Routes des projets
 app.use("/api/tasks", taskRoutes);
+app.use('/api/notifications', notificationRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));
