@@ -21,17 +21,17 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
 
     if (!title || !priority || !project) {
       return res.status(400).json({
-        message: "Title, priority and project are required",
+        message: "Titre, priorité et projet sont obligqtoire",
       });
     }
 
-    const validPriority = ["low", "medium", "high"];
+    const validPriority = ["basse", "moyenne", "haute"];
 
     const projectExists = await Project.findById(project);
 
     if (!projectExists) {
       return res.status(404).json({
-        message: "Project not found",
+        message: "Projet introuvable",
       });
     }
     
@@ -46,7 +46,7 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
 
   if (!allowed) {
     return res.status(400).json({
-      message: "Assigned user is not part of this project"
+      message: "l'utilisateur assigné ne fait pas partie de ce projet"
     })
   }
 }
@@ -103,7 +103,7 @@ router.get("/:id", authMiddleware, async (req, res) => {
 
     if (!task) {
       return res.status(404).json({
-        message: "Task not found",
+        message: "Tache est introuvable",
       });
     }
 
@@ -123,6 +123,21 @@ router.put("/:id", authMiddleware, async (req, res) => {
     message: "Invalid ID"
   })
 }
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Tach est introuvable"
+      });
+    }
+
+    const project = await Project.findById(task.project);
+
+    if (project.owner.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "seulement le propriétaire de projet est autorisé"
+      });
+    }
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -134,7 +149,7 @@ router.put("/:id", authMiddleware, async (req, res) => {
 
     if (!updatedTask) {
       return res.status(404).json({
-        message: "Task not found",
+        message: "Tache est introuvable",
       });
     }
 
@@ -156,14 +171,35 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
 }
     const { status } = req.body;
 
-    const validStatus = ["todo", "in-progress", "done"];
+    const validStatus = ["à faire", "en cours", "terminé"];
 
     if (!validStatus.includes(status)) {
       return res.status(400).json({
         message: "Invalid status",
       });
     }
+    const task = await Task.findById(req.params.id);
 
+   if (!task) {
+     return res.status(404).json({
+       message: "Tache est introuvable"
+     });
+   }
+
+   const project = await Project.findById(task.project);
+
+   const isOwner =
+     project.owner.toString() === req.user.id;
+
+   const isAssigned =
+     task.assignedTo &&
+     task.assignedTo.toString() === req.user.id;
+
+   if (!isOwner && !isAssigned) {
+     return res.status(403).json({
+       message: "Non authorisé"
+     });
+   }
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
@@ -175,7 +211,7 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
 
     if (!updatedTask) {
       return res.status(404).json({
-        message: "Task not found",
+        message: "Tache est introuvable",
       });
     }
 
@@ -195,16 +231,31 @@ router.delete("/:id", authMiddleware, async (req, res) => {
     message: "Invalid ID"
   })
 }
+    const task = await Task.findById(req.params.id);
+
+    if (!task) {
+      return res.status(404).json({
+        message: "Tache est introuvable"
+      });
+    }
+
+    const project = await Project.findById(task.project);
+
+    if (project.owner.toString() !== req.user.id) {
+      return res.status(403).json({
+        message: "seulement le propriétaire de projet est autorisé"
+      });
+    }
     const deletedTask = await Task.findByIdAndDelete(req.params.id);
 
     if (!deletedTask) {
       return res.status(404).json({
-        message: "Task not found",
+        message: "Tache est introuvable",
       });
     }
 
     res.json({
-      message: "Task deleted successfully",
+      message: "Tach est supprimé avec succès",
     });
   } catch (error) {
     res.status(500).json({
