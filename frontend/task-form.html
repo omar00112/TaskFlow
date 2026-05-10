@@ -105,6 +105,16 @@
                     <option value="terminé">Terminé</option>
                 </select>
             </div>
+                <!-- Champ caché pour stocker l'ID du projet -->
+    <input type="hidden" id="projectIdInput" value="">
+
+    <!-- Affichage du nom du projet -->
+    <div class="form-group">
+        <label>Projet</label>
+        <input type="text" id="projectName" readonly disabled style="background-color:#f0f0f0">
+    </div>
+
+    <button type="submit">Créer la tâche</button>
             <button type="submit">Créer la tâche</button>
         </form>
     </div>
