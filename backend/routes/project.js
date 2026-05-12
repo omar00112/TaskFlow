@@ -151,26 +151,24 @@ router.put("/:id", auth, async (req, res) => {
 // @route DELETE /api/projects/:id
 // @desc Supprimer un projet
 // @access Privé
-router.delete("/:id", auth, async (req, res) => {
+router.delete('/:id/members/:userId', auth, async (req, res) => {
   try {
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
+    if (!mongoose.Types.ObjectId.isValid(req.params.id) || !mongoose.Types.ObjectId.isValid(req.params.userId)) {
+      return res.status(400).json({ message: "ID invalide" });
+    }
     const project = await Project.findOne({ _id: req.params.id, owner: req.user.id });
-    if (!project) {
-      return res.status(404).json({ msg: "Projet non trouvé" });
+    if (!project) return res.status(404).json({ msg: 'Projet non trouvé ou accès refusé' });
+
+    // Prevent owner from removing themselves
+    if (req.params.userId === req.user.id) {
+      return res.status(400).json({ msg: "Vous ne pouvez pas vous retirer vous-même" });
     }
 
-    // Le middleware pre("deleteOne") dans le modèle Project gérera la suppression en cascade
-    await project.deleteOne(); 
-    res.json({ msg: "Projet supprimé" });
+    project.members = project.members.filter(m => m.toString() !== req.params.userId);
+    await project.save();
+    res.json(project);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).json({
-  error: err.message
-})
+    res.status(500).json({ error: err.message });
   }
 });
 
