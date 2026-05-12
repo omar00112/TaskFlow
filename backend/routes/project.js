@@ -196,10 +196,7 @@ router.post('/:id/members', auth, async (req, res) => {
     msg: "l'utilisateur est déjà un membre"
   })
 }
-    // verifier qu'il est deja un membre
-    if (project.members.includes(userToAdd._id))
-      return res.status(400).json({ msg: 'Membre déjà dans le projet' })
-
+    
     project.members.push(userToAdd._id)
     await project.save()
     res.json(project)
