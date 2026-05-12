@@ -26,7 +26,8 @@ router.post('/register', async (req, res) => {
 // route de connexion
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        email = email.toLowerCase();
         const user = await User.findOne({ email });
         if (user && await bcrypt.compare(password, user.password)) {
             const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
