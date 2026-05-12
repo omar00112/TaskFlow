@@ -5,7 +5,7 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const Task = require("../models/Task");
 const mongoose = require('mongoose');
-
+const logActivity = require('../utils/logActivity');
 // @route POST /api/projects
 // @desc Créer un nouveau projet
 // @access Privé
@@ -138,6 +138,7 @@ router.put("/:id", auth, async (req, res) => {
       { new: true } // Retourner le document mis à jour
 
     );
+    await logActivity('project_updated', req.params.id, req.user.id, { title: project.title });
     res.json(project);
   } catch (err) {
     console.error(err.message);
@@ -203,6 +204,7 @@ router.post('/:id/members', auth, async (req, res) => {
 
     project.members.push(userToAdd._id)
     await project.save()
+    await logActivity('member_added', project._id, req.user.id, { addedUserEmail: req.body.email });
     res.json(project)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -231,6 +233,7 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
       m => m.toString() !== req.params.userId
     )
     await project.save()
+    await logActivity('member_removed', project._id, req.user.id, { removedUserId: req.params.userId });
     res.json(project)
   } catch (err) {
     res.status(500).json({ error: err.message })
