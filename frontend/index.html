@@ -34,6 +34,11 @@
         <div id="dashboard" style="display:none">
             <h2>Bienvenue sur TaskFlow!</h2>
             <p>Vous êtes maintenant connecté.</p>
+            
+            <!-- Fonctionnalité 9 — Historique des activités -->
+            <h3>Historique des activités</h3>
+            <ul id="activity-list"></ul>
+            
             <button onclick="logout()" class="btn-logout">Se déconnecter</button>
         </div>
 
@@ -79,6 +84,7 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('register-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
+            loadActivityFeed(currentProjectId);
         }
 
         function displayMessage(text, isSuccess = false) {
@@ -150,6 +156,59 @@
             delete axios.defaults.headers.common['Authorization'];
             showLogin();
         }
+
+        // --- Fonctionnalité 9 : Historique des activités ---
+
+        const ACTION_LABELS = {
+            task_created: 'a créé la tâche',
+            task_deleted: 'a supprimé la tâche',
+            task_status_changed: 'a changé le statut de',
+            member_added: 'a ajouté un membre au projet',
+            member_removed: 'a retiré un membre du projet',
+            project_updated: 'a modifié le projet'
+        };
+
+        function timeAgo(dateStr) {
+            const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+            if (diff < 60) return 'il y a quelques secondes';
+            if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+            if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+            return `il y a ${Math.floor(diff / 86400)} j`;
+        }
+
+        function formatActivity(a) {
+            const name = a.user?.fullName || 'Quelqu\'un';
+            const action = ACTION_LABELS[a.type] || a.type;
+            const meta = a.meta || {};
+            let detail = '';
+            if (a.type === 'task_created' || a.type === 'task_deleted') {
+                detail = `"${meta.taskTitle}"`;
+            } else if (a.type === 'task_status_changed') {
+                detail = `"${meta.taskTitle}" → ${meta.newStatus}`;
+            }
+            return `${name} ${action} ${detail} — ${timeAgo(a.createdAt)}`;
+        }
+
+        async function loadActivityFeed(projectId) {
+            if (!projectId) return;
+            try {
+                const response = await axios.get(
+                    `http://localhost:3000/api/projects/${projectId}/activities`
+                );
+                const list = document.getElementById('activity-list');
+                if (!list) return;
+                if (response.data.length === 0) {
+                    list.innerHTML = '<li>Aucune activité pour l\'instant.</li>';
+                    return;
+                }
+                list.innerHTML = response.data
+                    .map(a => `<li>${formatActivity(a)}</li>`)
+                    .join('');
+            } catch (error) {
+                console.error('Erreur chargement activités :', error);
+            }
+        }
+    
     </script>
 </body>
 </html>
