@@ -23,6 +23,7 @@ router.post("/", auth, async (req, res) => {
       dueDate,
       status,
       owner: req.user.id, // Définit le propriétaire comme l'utilisateur connecté depuis le middleware d'auth
+      members: [req.user.id],
     });
     const project = await newProject.save();
     res.status(201).json(project);
@@ -147,8 +148,8 @@ router.put("/:id", auth, async (req, res) => {
   }
 });
 
-// @route PUT /api/projects/:id
-// @desc Mettre à jour un projet
+// @route DELETE /api/projects/:id
+// @desc Supprimer un projet
 // @access Privé
 router.delete("/:id", auth, async (req, res) => {
   try {
@@ -217,11 +218,7 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
     message: "Invalid ID"
   })
 }
-    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
+
     // verifier que le membre qui supprime est le onwer
     const project = await Project.findOne({ _id: req.params.id, owner: req.user.id })
     if (!project) return res.status(404).json({ msg: 'Projet non trouvé ou accès refusé' })
