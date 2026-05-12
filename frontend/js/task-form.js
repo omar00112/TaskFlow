@@ -95,9 +95,31 @@ async function loadProjectInfo() {
     }
 }
 
+// Charger les membres du projet pour le menu d'assignation
+async function loadMembers() {
+    if (!currentProjectId) return;
+    try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get(`/api/projects/${currentProjectId}/members`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        const select = document.getElementById('assignedTo');
+        if (!select) return;
+        response.data.forEach(member => {
+            const option = document.createElement('option');
+            option.value = member._id;
+            option.textContent = `${member.fullName} (${member.email})`;
+            select.appendChild(option);
+        });
+    } catch (error) {
+        console.error('Erreur chargement membres:', error);
+    }
+}
+
 // Initialisation au chargement
 document.addEventListener('DOMContentLoaded', function() {
     loadProjectInfo();
+    loadMembers(); 
     setupAutoSave();
     checkForDraft();
     
@@ -111,7 +133,8 @@ document.addEventListener('DOMContentLoaded', function() {
             description: document.getElementById('description').value,
             priority: document.getElementById('priority').value,
             status: document.getElementById('status').value,
-            project: projectId
+            project: projectId,
+            assignedTo: document.getElementById('assignedTo').value || undefined
         };
         
         try {
