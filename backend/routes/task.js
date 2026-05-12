@@ -5,6 +5,7 @@ const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
+const logActivity = require('../utils/logActivity');
 
 // CREATE TASK
 router.post("/", authMiddleware,validateTask, async (req, res) => {
@@ -61,6 +62,7 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
       assignedTo,
     });
 
+    await logActivity('task_created', task.project, req.user.id, { taskTitle: task.title });
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({
@@ -246,6 +248,10 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
       });
     }
 
+    await logActivity('task_status_changed', task.project, req.user.id, {
+      taskTitle: task.title,
+      newStatus: status
+    });
     res.json(updatedTask);
   } catch (error) {
     res.status(500).json({
@@ -285,8 +291,9 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       });
     }
 
+    await logActivity('task_deleted', task.project, req.user.id, { taskTitle: task.title });
     res.json({
-      message: "Tach est supprimé avec succès",
+      message: "Tâche supprimée avec succès",
     });
   } catch (error) {
     res.status(500).json({
