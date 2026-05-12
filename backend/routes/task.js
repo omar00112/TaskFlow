@@ -88,6 +88,37 @@ router.get(
   }
 );
 
+// GET /api/tasks/my-tasks — tasks assigned to the logged-in user
+router.get('/my-tasks', authMiddleware, async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.user.id })
+      .populate('project', 'title')
+      .populate('assignedTo', 'fullName email')
+      .sort({ priority: -1, dueDate: 1 });
+
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+router.get(
+  "/project/:projectId/my-tasks",
+  authMiddleware,
+  async (req, res) => {
+    try {
+      const tasks = await Task.find({
+        project: req.params.projectId,
+        assignedTo: req.user.id,
+      }).populate("assignedTo", "fullName email");
+
+      res.json(tasks);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
+
 // GET ONE TASK
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
