@@ -271,6 +271,7 @@ router.get("/:id/tasks", auth, async (req, res) => {
       error: err.message
     });
   }
+});  
 // GET /api/projects/:id/members - liste les membres d'un projet
 router.get('/:id/members', auth, async (req, res) => {
   try {
@@ -289,4 +290,4 @@ router.get('/:id/members', auth, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-});module.exports = router;
+module.exports = router;
