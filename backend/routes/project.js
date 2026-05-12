@@ -268,4 +268,22 @@ router.get("/:id/tasks", auth, async (req, res) => {
       error: err.message
     });
   }
+// GET /api/projects/:id/members - liste les membres d'un projet
+router.get('/:id/members', auth, async (req, res) => {
+  try {
+    const project = await Project.findOne({
+      _id: req.params.id,
+      $or: [{ owner: req.user.id }, { members: req.user.id }]
+    })
+      .populate('members', 'fullName email')
+      .populate('owner', 'fullName email');
+
+    if (!project) return res.status(404).json({ msg: 'Projet non trouvé' });
+
+    const allMembers = [project.owner, ...project.members];
+    res.json(allMembers);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 });module.exports = router;
