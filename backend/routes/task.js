@@ -1,56 +1,38 @@
 const express = require("express");
 const router = express.Router();
-const validateTask = require('../middleware/validateTask')
 const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 
-// CREATE TASK
-router.post("/", authMiddleware,validateTask, async (req, res) => {
+// Créer une tâche
+router.post("/", authMiddleware, async (req, res) => {
   try {
-    const {
-      title,
-      description,
-      priority,
-      status,
-      dueDate,
-      project,
-      assignedTo,
-    } = req.body;
+    const { title, description, priority, status, dueDate, project, assignedTo } = req.body;
 
     if (!title || !priority || !project) {
       return res.status(400).json({
-        message: "Titre, priorité et projet sont obligqtoire",
+        message: "Titre, priorité et projet sont obligatoires",
       });
     }
-
-    const validPriority = ["basse", "moyenne", "haute"];
 
     const projectExists = await Project.findById(project);
-
     if (!projectExists) {
-      return res.status(404).json({
-        message: "Projet introuvable",
-      });
+      return res.status(404).json({ message: "Projet introuvable" });
     }
-    
+
     if (assignedTo) {
-  const projectData = await Project.findById(project)
+      const projectData = await Project.findById(project);
+      const allowed =
+        projectData.owner.toString() === assignedTo ||
+        projectData.members.some(m => m.toString() === assignedTo);
+      if (!allowed) {
+        return res.status(400).json({
+          message: "L'utilisateur assigné ne fait pas partie de ce projet",
+        });
+      }
+    }
 
-  const allowed =
-    projectData.owner.toString() === assignedTo ||
-    projectData.members.some(
-      m => m.toString() === assignedTo
-    )
-
-  if (!allowed) {
-    return res.status(400).json({
-      message: "l'utilisateur assigné ne fait pas partie de ce projet"
-    })
-  }
-}
-    
     const task = await Task.create({
       title,
       description,
@@ -59,208 +41,128 @@ router.post("/", authMiddleware,validateTask, async (req, res) => {
       dueDate,
       project,
       assignedTo,
+      createdBy: req.user.id,
     });
 
     res.status(201).json(task);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// GET ALL TASKS OF PROJECT
-router.get(
-  "/project/:projectId",
-  authMiddleware,
-  async (req, res) => {
-    try {
-      const tasks = await Task.find({
-        project: req.params.projectId,
-      }).populate("assignedTo", "fullName email");
-
-      res.json(tasks);
-    } catch (error) {
-      res.status(500).json({
-        message: error.message,
-      });
-    }
+// Récupérer toutes les tâches assignées à l'utilisateur connecté (tableau de bord)
+router.get("/assigned", authMiddleware, async (req, res) => {
+  try {
+    const tasks = await Task.find({ assignedTo: req.user.id })
+      .populate("project", "title")
+      .populate("assignedTo", "fullName email");
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-);
+});
 
-// GET ONE TASK
+// Récupérer toutes les tâches d'un projet
+router.get("/project/:projectId", authMiddleware, async (req, res) => {
+  try {
+    const tasks = await Task.find({ project: req.params.projectId })
+      .populate("assignedTo", "fullName email");
+    res.json(tasks);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Récupérer une tâche par son ID
 router.get("/:id", authMiddleware, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
-    const task = await Task.findById(req.params.id).populate(
-      "assignedTo",
-      "fullName email"
-    );
-
-    if (!task) {
-      return res.status(404).json({
-        message: "Tache est introuvable",
-      });
+      return res.status(400).json({ message: "ID invalide" });
     }
-
+    const task = await Task.findById(req.params.id).populate("assignedTo", "fullName email");
+    if (!task) {
+      return res.status(404).json({ message: "Tâche introuvable" });
+    }
     res.json(task);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// UPDATE TASK
+// Mettre à jour une tâche (propriétaire du projet uniquement)
 router.put("/:id", authMiddleware, async (req, res) => {
   try {
-     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "ID invalide" });
+    }
     const task = await Task.findById(req.params.id);
-
     if (!task) {
-      return res.status(404).json({
-        message: "Tach est introuvable"
-      });
+      return res.status(404).json({ message: "Tâche introuvable" });
     }
-
     const project = await Project.findById(task.project);
-
     if (project.owner.toString() !== req.user.id) {
-      return res.status(403).json({
-        message: "seulement le propriétaire de projet est autorisé"
-      });
+      return res.status(403).json({ message: "Seul le propriétaire du projet peut modifier la tâche" });
     }
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
-
-    if (!updatedTask) {
-      return res.status(404).json({
-        message: "Tache est introuvable",
-      });
-    }
-
+    const updatedTask = await Task.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
     res.json(updatedTask);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// UPDATE ONLY STATUS
+// Mettre à jour uniquement le statut d'une tâche (propriétaire ou membre assigné)
 router.patch("/:id/status", authMiddleware, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
+      return res.status(400).json({ message: "ID invalide" });
+    }
     const { status } = req.body;
-
     const validStatus = ["à faire", "en cours", "terminé"];
-
     if (!validStatus.includes(status)) {
-      return res.status(400).json({
-        message: "Invalid status",
-      });
+      return res.status(400).json({ message: "Statut invalide" });
     }
     const task = await Task.findById(req.params.id);
-
-   if (!task) {
-     return res.status(404).json({
-       message: "Tache est introuvable"
-     });
-   }
-
-   const project = await Project.findById(task.project);
-
-   const isOwner =
-     project.owner.toString() === req.user.id;
-
-   const isAssigned =
-     task.assignedTo &&
-     task.assignedTo.toString() === req.user.id;
-
-   if (!isOwner && !isAssigned) {
-     return res.status(403).json({
-       message: "Non authorisé"
-     });
-   }
+    if (!task) {
+      return res.status(404).json({ message: "Tâche introuvable" });
+    }
+    const project = await Project.findById(task.project);
+    const isOwner = project.owner.toString() === req.user.id;
+    const isAssigned = task.assignedTo && task.assignedTo.toString() === req.user.id;
+    if (!isOwner && !isAssigned) {
+      return res.status(403).json({ message: "Non autorisé" });
+    }
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
-      {
-        new: true,
-        runValidators: true,
-      }
+      { new: true, runValidators: true }
     );
-
-    if (!updatedTask) {
-      return res.status(404).json({
-        message: "Tache est introuvable",
-      });
-    }
-
     res.json(updatedTask);
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 });
 
-// DELETE TASK
+// Supprimer une tâche (propriétaire du projet uniquement)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
-     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-  return res.status(400).json({
-    message: "Invalid ID"
-  })
-}
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(400).json({ message: "ID invalide" });
+    }
     const task = await Task.findById(req.params.id);
-
     if (!task) {
-      return res.status(404).json({
-        message: "Tache est introuvable"
-      });
+      return res.status(404).json({ message: "Tâche introuvable" });
     }
-
     const project = await Project.findById(task.project);
-
     if (project.owner.toString() !== req.user.id) {
-      return res.status(403).json({
-        message: "seulement le propriétaire de projet est autorisé"
-      });
+      return res.status(403).json({ message: "Seul le propriétaire du projet peut supprimer la tâche" });
     }
-    const deletedTask = await Task.findByIdAndDelete(req.params.id);
-
-    if (!deletedTask) {
-      return res.status(404).json({
-        message: "Tache est introuvable",
-      });
-    }
-
-    res.json({
-      message: "Tach est supprimé avec succès",
-    });
+    await Task.findByIdAndDelete(req.params.id);
+    res.json({ message: "Tâche supprimée avec succès" });
   } catch (error) {
-    res.status(500).json({
-      message: error.message,
-    });
+    res.status(500).json({ message: error.message });
   }
 });
 
