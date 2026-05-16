@@ -34,8 +34,15 @@
         <div id="dashboard" style="display:none">
             <h2>Bienvenue sur TaskFlow!</h2>
             <p>Vous êtes maintenant connecté.</p>
+           
+            <!-- Sélecteur de projet pour tester -->
+                <div>
+                    <label>ID du projet : </label>
+                    <input type="text" id="project-id-input" placeholder="Ex: 6a0633137e7b6c050165f2af">
+                    <button onclick="loadProjectActivities()">Afficher les activités</button>
+                </div>
             
-            <!-- Fonctionnalité 9 — Historique des activités -->
+        <!-- Fonctionnalité 9 — Historique des activités -->
             <h3>Historique des activités</h3>
             <ul id="activity-list"></ul>
             
@@ -52,6 +59,11 @@
     <script>
         // Configuration de base pour Axios (URL de votre backend)
         const API_URL = 'http://localhost:3000/api/auth';
+       
+        function getProjectIdFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          return params.get('projectId');
+       } 
 
         // Vérifier la session au chargement
         window.onload = function() {
@@ -84,7 +96,13 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('register-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
-            loadActivityFeed(currentProjectId);
+           const projectId = getProjectIdFromUrl();
+               if (projectId) {
+                  loadActivityFeed(projectId);
+               } else {
+                  const list = document.getElementById('activity-list');
+                if (list) list.innerHTML = '<li>Sélectionnez un projet pour voir son activité.</li>';
+               }
         }
 
         function displayMessage(text, isSuccess = false) {
@@ -187,6 +205,16 @@
                 detail = `"${meta.taskTitle}" → ${meta.newStatus}`;
             }
             return `${name} ${action} ${detail} — ${timeAgo(a.createdAt)}`;
+        }
+        function loadProjectActivities() {
+            const projectId = document.getElementById('project-id-input').value.trim();
+            if (!projectId) return;
+            // vérifier que l'ID a le bon format (24 caractères hex)
+            if (!/^[a-f\d]{24}$/i.test(projectId)) {
+                alert("ID de projet invalide");
+                return;
+            }
+           loadActivityFeed(projectId); 
         }
 
         async function loadActivityFeed(projectId) {
