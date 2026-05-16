@@ -141,11 +141,7 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
       { status },
       { new: true, runValidators: true }
     );
-    const updatedTask = await Task.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true, runValidators: true }
-    );
+
 
     // Créer une notification pour la personne assignée
     if (updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
