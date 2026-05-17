@@ -4,6 +4,7 @@ const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
+const Notification = require("../models/Notification");
 const logActivity = require('../utils/logActivity');
 
 // Créer une tâche
@@ -44,6 +45,16 @@ router.post("/", authMiddleware, async (req, res) => {
       assignedTo,
       createdBy: req.user.id,
     });
+    
+    if (assignedTo && assignedTo.toString() !== req.user.id) {
+      await Notification.create({
+        userId: assignedTo,
+        message: `Une nouvelle tâche "${title}" vous a été assignée`,
+        taskId: task._id,
+        projectId: project,
+        type: 'task_assigned'
+      });
+    }
 
     await logActivity('task_created', task.project, req.user.id, { taskTitle: task.title });
     res.status(201).json(task);
@@ -136,15 +147,34 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
     if (!isOwner && !isAssigned) {
       return res.status(403).json({ message: "Non autorisé" });
     }
+
+    const oldStatus = task.status;
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true, runValidators: true }
     );
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Tâche introuvable" });
+    }
+
+    // Notification si le statut a changé et que l'utilisateur assigné n'est pas l'auteur du changement
+    if (oldStatus !== status && updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
+      await Notification.create({
+        userId: updatedTask.assignedTo,
+        message: `La tâche "${updatedTask.title}" a changé de statut : ${status}`,
+        taskId: updatedTask._id,
+        projectId: updatedTask.project,
+        type: 'status_changed'
+      });
+    }
+
     await logActivity('task_status_changed', task.project, req.user.id, {
       taskTitle: task.title,
       newStatus: status
     });
+
     res.json(updatedTask);
   } catch (error) {
     res.status(500).json({ message: error.message });

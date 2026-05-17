@@ -160,13 +160,21 @@ router.post('/:id/members', auth, async (req, res) => {
     }
     project.members.push(userToAdd._id);
     await project.save();
+
+    const Notification = require("../models/Notification");
+    await Notification.create({
+        userId: userToAdd._id,
+        message: `Vous avez été ajouté au projet "${project.title}"`,
+        projectId: project._id,
+        type: 'member_added'
+    });
+
     await logActivity('member_added', project._id, req.user.id, { addedUserEmail: req.body.email });
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });
-
 // @route DELETE /api/projects/:id/members/:userId
 // @desc Retirer un membre (propriétaire uniquement)
 // @access Privé
