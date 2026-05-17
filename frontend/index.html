@@ -31,29 +31,43 @@
             <p>Déjà un compte? <span onclick="showLogin()">Se connecter</span></p>
         </div>
 
-    <!-- Dashboard après connexion -->
-<div id="dashboard" style="display:none">
-    <div class="header-right">
-        <div class="notification-area">
-            <div id="notificationIcon" class="bell-icon">
-                🔔
-                <span id="notificationBadge" class="badge" style="display: none;">0</span>
-            </div>
-            <div id="notificationDropdown" class="dropdown">
-                <div class="dropdown-header">
-                    Notifications
-                    <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+        <!-- Dashboard après connexion -->
+        <div id="dashboard" style="display:none">
+            <div class="header-right">
+                <div class="notification-area">
+                    <div id="notificationIcon" class="bell-icon">
+                        🔔
+                        <span id="notificationBadge" class="badge" style="display: none;">0</span>
+                    </div>
+                    <div id="notificationDropdown" class="dropdown">
+                        <div class="dropdown-header">
+                            Notifications
+                            <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+                        </div>
+                        <div id="notificationList" class="dropdown-list">
+                            <div class="notification-item">Aucune notification</div>
+                        </div>
+                    </div>
                 </div>
-                <div id="notificationList" class="dropdown-list">
-                    <div class="notification-item">Aucune notification</div>
-                </div>
+                <button onclick="logout()" class="btn-logout logout-btn">Se déconnecter</button>
             </div>
+            
+            <h2>Bienvenue sur TaskFlow!</h2>
+            <p>Vous êtes maintenant connecté.</p>
+           
+            <!-- Sélecteur de projet pour tester (M5) -->
+            <div>
+                <label>ID du projet : </label>
+                <input type="text" id="project-id-input" placeholder="Ex: 6a0633137e7b6c050165f2af">
+                <button onclick="loadProjectActivities()">Afficher les activités</button>
+            </div>
+            
+            <!-- Fonctionnalité 9 — Historique des activités (M5) -->
+            <h3>Historique des activités</h3>
+            <ul id="activity-list"></ul>
         </div>
-        <button onclick="logout()" class="btn-logout logout-btn">Se déconnecter</button>
-    </div>
-    <h2>Bienvenue sur TaskFlow!</h2>
-    <p>Vous êtes maintenant connecté.</p>
-</div>
+        </div>
+
 
         <!-- Message d'erreur ou de succès -->
         <p id="message"></p>
@@ -66,6 +80,11 @@
     <script>
         // Configuration de base pour Axios (URL de votre backend)
         const API_URL = 'http://localhost:3000/api/auth';
+       
+        function getProjectIdFromUrl() {
+          const params = new URLSearchParams(window.location.search);
+          return params.get('projectId');
+       } 
 
         // Vérifier la session au chargement
         window.onload = function() {
@@ -98,6 +117,13 @@
             document.getElementById('login-form').style.display = 'none';
             document.getElementById('register-form').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
+           const projectId = getProjectIdFromUrl();
+               if (projectId) {
+                  loadActivityFeed(projectId);
+               } else {
+                  const list = document.getElementById('activity-list');
+                if (list) list.innerHTML = '<li>Sélectionnez un projet pour voir son activité.</li>';
+               }
         }
 
         function displayMessage(text, isSuccess = false) {
@@ -169,6 +195,69 @@
             delete axios.defaults.headers.common['Authorization'];
             showLogin();
         }
+
+        // --- Fonctionnalité 9 : Historique des activités ---
+
+        const ACTION_LABELS = {
+            task_created: 'a créé la tâche',
+            task_deleted: 'a supprimé la tâche',
+            task_status_changed: 'a changé le statut de',
+            member_added: 'a ajouté un membre au projet',
+            member_removed: 'a retiré un membre du projet',
+            project_updated: 'a modifié le projet'
+        };
+
+        function timeAgo(dateStr) {
+            const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+            if (diff < 60) return 'il y a quelques secondes';
+            if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+            if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+            return `il y a ${Math.floor(diff / 86400)} j`;
+        }
+
+        function formatActivity(a) {
+            const name = a.user?.fullName || 'Quelqu\'un';
+            const action = ACTION_LABELS[a.type] || a.type;
+            const meta = a.meta || {};
+            let detail = '';
+            if (a.type === 'task_created' || a.type === 'task_deleted') {
+                detail = `"${meta.taskTitle}"`;
+            } else if (a.type === 'task_status_changed') {
+                detail = `"${meta.taskTitle}" → ${meta.newStatus}`;
+            }
+            return `${name} ${action} ${detail} — ${timeAgo(a.createdAt)}`;
+        }
+        function loadProjectActivities() {
+            const projectId = document.getElementById('project-id-input').value.trim();
+            if (!projectId) return;
+            // vérifier que l'ID a le bon format (24 caractères hex)
+            if (!/^[a-f\d]{24}$/i.test(projectId)) {
+                alert("ID de projet invalide");
+                return;
+            }
+           loadActivityFeed(projectId); 
+        }
+
+        async function loadActivityFeed(projectId) {
+            if (!projectId) return;
+            try {
+                const response = await axios.get(
+                    `http://localhost:3000/api/projects/${projectId}/activities`
+                );
+                const list = document.getElementById('activity-list');
+                if (!list) return;
+                if (response.data.length === 0) {
+                    list.innerHTML = '<li>Aucune activité pour l\'instant.</li>';
+                    return;
+                }
+                list.innerHTML = response.data
+                    .map(a => `<li>${formatActivity(a)}</li>`)
+                    .join('');
+            } catch (error) {
+                console.error('Erreur chargement activités :', error);
+            }
+        }
+    
     </script>
 </body>
 </html>

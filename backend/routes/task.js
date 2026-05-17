@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 const Notification = require("../models/Notification");
 
+const logActivity = require('../utils/logActivity');
 
 // Créer une tâche
 router.post("/", authMiddleware, async (req, res) => {
@@ -46,6 +47,7 @@ router.post("/", authMiddleware, async (req, res) => {
       createdBy: req.user.id,
     });
 
+    await logActivity('task_created', task.project, req.user.id, { taskTitle: task.title });
     res.status(201).json(task);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -160,6 +162,10 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
       });
     }
 
+    await logActivity('task_status_changed', task.project, req.user.id, {
+      taskTitle: task.title,
+      newStatus: status
+    });
     res.json(updatedTask);
    
   } catch (error) {
@@ -182,6 +188,7 @@ router.delete("/:id", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Seul le propriétaire du projet peut supprimer la tâche" });
     }
     await Task.findByIdAndDelete(req.params.id);
+    await logActivity('task_deleted', task.project, req.user.id, { taskTitle: task.title });
     res.json({ message: "Tâche supprimée avec succès" });
   } catch (error) {
     res.status(500).json({ message: error.message });

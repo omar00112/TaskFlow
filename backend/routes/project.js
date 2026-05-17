@@ -5,6 +5,7 @@ const Project = require("../models/Project");
 const User = require("../models/User");
 const Task = require("../models/Task");
 const mongoose = require('mongoose');
+const logActivity = require('../utils/logActivity');
 
 // @route POST /api/projects
 // @desc Créer un nouveau projet
@@ -110,6 +111,7 @@ router.put("/:id", auth, async (req, res) => {
       { $set: projectFields },
       { new: true }
     );
+    await logActivity('project_updated', req.params.id, req.user.id, { title: project.title });
     res.json(project);
   } catch (err) {
     console.error(err.message);
@@ -158,6 +160,7 @@ router.post('/:id/members', auth, async (req, res) => {
     }
     project.members.push(userToAdd._id);
     await project.save();
+    await logActivity('member_added', project._id, req.user.id, { addedUserEmail: req.body.email });
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -181,6 +184,7 @@ router.delete('/:id/members/:userId', auth, async (req, res) => {
     }
     project.members = project.members.filter(m => m.toString() !== req.params.userId);
     await project.save();
+    await logActivity('member_removed', project._id, req.user.id, { removedUserId: req.params.userId });
     res.json(project);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -204,7 +208,6 @@ router.get('/:id/members', auth, async (req, res) => {
     if (!project) {
       return res.status(404).json({ message: "Projet non trouvé" });
     }
-    // Éviter les doublons : le propriétaire est déjà dans `members`, mais on le met en premier sans répétition
     const ownerId = project.owner._id.toString();
     const otherMembers = project.members.filter(m => m._id.toString() !== ownerId);
     const allMembers = [project.owner, ...otherMembers];
