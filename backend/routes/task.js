@@ -148,15 +148,20 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
     if (!isOwner && !isAssigned) {
       return res.status(403).json({ message: "Non autorisé" });
     }
+
+    // CORR M4 
+    const oldStatus = task.status;
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true, runValidators: true }
     );
 
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Tâche introuvable" });
+    }
 
-    // Créer une notification pour la personne assignée
-    if (updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
+    if (oldStatus !== status && updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
         await Notification.create({
             userId: updatedTask.assignedTo,
             message: `La tâche "${updatedTask.title}" a changé de statut : ${status}`,
@@ -165,24 +170,13 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
             type: 'status_changed'
         });
     }
+    
 
-    if (!updatedTask) {
-      return res.status(404).json({
-        message: "Tâche introuvable",
-      });
-    }
-
-    await logActivity('task_status_changed', task.project, req.user.id, {
-      taskTitle: task.title,
-      newStatus: status
-    });
     res.json(updatedTask);
-   
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
 // Supprimer une tâche (propriétaire du projet uniquement)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
