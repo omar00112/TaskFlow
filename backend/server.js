@@ -8,7 +8,7 @@ require('dotenv').config();
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/project'); // Import des routes projets
-
+const activityRoutes = require('./routes/activity');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,6 +19,7 @@ connectDB();
 // routes
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes); // Routes des projets
+app.use('/api/projects', activityRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use('/api/notifications', notificationRoutes);
 
