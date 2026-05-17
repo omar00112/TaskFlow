@@ -46,6 +46,16 @@ router.post("/", authMiddleware, async (req, res) => {
       assignedTo,
       createdBy: req.user.id,
     });
+    
+    if (assignedTo && assignedTo.toString() !== req.user.id) {
+    await Notification.create({
+        userId: assignedTo,
+        message: `Une nouvelle tâche "${title}" vous a été assignée`,
+        taskId: task._id,
+        projectId: project,
+        type: 'task_assigned'
+    });
+}
 
     await logActivity('task_created', task.project, req.user.id, { taskTitle: task.title });
     res.status(201).json(task);
