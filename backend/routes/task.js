@@ -4,18 +4,8 @@ const Task = require("../models/Task");
 const Project = require("../models/Project");
 const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
-<<<<<<< HEAD
-<<<<<<< HEAD
 const Notification = require("../models/Notification");
-
-=======
 const logActivity = require('../utils/logActivity');
->>>>>>> develop
-=======
-const Notification = require("../models/Notification");
-
-const logActivity = require('../utils/logActivity');
->>>>>>> 5ffaf4bfbea1c16f6980dc1b92ffa521ff661a46
 
 // Créer une tâche
 router.post("/", authMiddleware, async (req, res) => {
@@ -57,14 +47,14 @@ router.post("/", authMiddleware, async (req, res) => {
     });
     
     if (assignedTo && assignedTo.toString() !== req.user.id) {
-    await Notification.create({
+      await Notification.create({
         userId: assignedTo,
         message: `Une nouvelle tâche "${title}" vous a été assignée`,
         taskId: task._id,
         projectId: project,
         type: 'task_assigned'
-    });
-}
+      });
+    }
 
     await logActivity('task_created', task.project, req.user.id, { taskTitle: task.title });
     res.status(201).json(task);
@@ -158,53 +148,39 @@ router.patch("/:id/status", authMiddleware, async (req, res) => {
       return res.status(403).json({ message: "Non autorisé" });
     }
 
-    // CORR M4 
     const oldStatus = task.status;
     const updatedTask = await Task.findByIdAndUpdate(
       req.params.id,
       { status },
       { new: true, runValidators: true }
     );
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 5ffaf4bfbea1c16f6980dc1b92ffa521ff661a46
 
     if (!updatedTask) {
       return res.status(404).json({ message: "Tâche introuvable" });
     }
 
+    // Notification si le statut a changé et que l'utilisateur assigné n'est pas l'auteur du changement
     if (oldStatus !== status && updatedTask.assignedTo && updatedTask.assignedTo.toString() !== req.user.id) {
-        await Notification.create({
-            userId: updatedTask.assignedTo,
-            message: `La tâche "${updatedTask.title}" a changé de statut : ${status}`,
-            taskId: updatedTask._id,
-            projectId: updatedTask.project,
-            type: 'status_changed'
-        });
-    }
-    
-
-<<<<<<< HEAD
-    if (!updatedTask) {
-      return res.status(404).json({
-        message: "Tâche introuvable",
+      await Notification.create({
+        userId: updatedTask.assignedTo,
+        message: `La tâche "${updatedTask.title}" a changé de statut : ${status}`,
+        taskId: updatedTask._id,
+        projectId: updatedTask.project,
+        type: 'status_changed'
       });
     }
 
-=======
     await logActivity('task_status_changed', task.project, req.user.id, {
       taskTitle: task.title,
       newStatus: status
     });
->>>>>>> develop
-=======
->>>>>>> 5ffaf4bfbea1c16f6980dc1b92ffa521ff661a46
+
     res.json(updatedTask);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
+
 // Supprimer une tâche (propriétaire du projet uniquement)
 router.delete("/:id", authMiddleware, async (req, res) => {
   try {
