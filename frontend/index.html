@@ -31,45 +31,49 @@
             <p>Déjà un compte? <span onclick="showLogin()">Se connecter</span></p>
         </div>
 
+<<<<<<<<< Temporary merge branch 1
         <!-- Dashboard après connexion -->
         <div id="dashboard" style="display:none">
-            <!-- PARTIE MEMBRE 4 : Cloche + Badge + Dropdown (corrigée) -->
-            <div class="header-right">
-                <div class="notification-area">
-                    <div id="notificationIcon" class="bell-icon">
-                        🔔
-                        <span id="notificationBadge" class="badge" style="display: none;">0</span>
-                    </div>
-                    <div id="notificationDropdown" class="dropdown">
-                        <div class="dropdown-header">
-                            Notifications
-                            <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
-                        </div>
-                        <div id="notificationList" class="dropdown-list">
-                            <div class="notification-item">Aucune notification</div>
-                        </div>
-                    </div>
-                </div>
-                <button onclick="logout()" class="btn-logout logout-btn">Se déconnecter</button>
-            </div>
-            <!-- FIN PARTIE MEMBRE 4 -->
-
-            <!-- PARTIE DES AUTRES MEMBRES (M1, M5) - NON MODIFIÉE -->
             <h2>Bienvenue sur TaskFlow!</h2>
             <p>Vous êtes maintenant connecté.</p>
            
             <!-- Sélecteur de projet pour tester -->
-            <div>
-                <label>ID du projet : </label>
-                <input type="text" id="project-id-input" placeholder="Ex: 6a0633137e7b6c050165f2af">
-                <button onclick="loadProjectActivities()">Afficher les activités</button>
-            </div>
+                <div>
+                    <label>ID du projet : </label>
+                    <input type="text" id="project-id-input" placeholder="Ex: 6a0633137e7b6c050165f2af">
+                    <button onclick="loadProjectActivities()">Afficher les activités</button>
+                </div>
             
-            <!-- Fonctionnalité 9 — Historique des activités -->
+        <!-- Fonctionnalité 9 — Historique des activités -->
             <h3>Historique des activités</h3>
             <ul id="activity-list"></ul>
-            <!-- FIN PARTIE AUTRES MEMBRES -->
+            
+            <button onclick="logout()" class="btn-logout">Se déconnecter</button>
+=========
+    <!-- Dashboard après connexion -->
+<div id="dashboard" style="display:none">
+    <div class="header-right">
+        <div class="notification-area">
+            <div id="notificationIcon" class="bell-icon">
+                🔔
+                <span id="notificationBadge" class="badge" style="display: none;">0</span>
+            </div>
+            <div id="notificationDropdown" class="dropdown">
+                <div class="dropdown-header">
+                    Notifications
+                    <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+                </div>
+                <div id="notificationList" class="dropdown-list">
+                    <div class="notification-item">Aucune notification</div>
+                </div>
+            </div>
+>>>>>>>>> Temporary merge branch 2
         </div>
+        <button onclick="logout()" class="btn-logout logout-btn">Se déconnecter</button>
+    </div>
+    <h2>Bienvenue sur TaskFlow!</h2>
+    <p>Vous êtes maintenant connecté.</p>
+</div>
 
         <!-- Message d'erreur ou de succès -->
         <p id="message"></p>
