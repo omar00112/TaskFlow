@@ -10,7 +10,7 @@ async function loadNotifications() {
         const token = localStorage.getItem('token');
         if (!token) return;
 
-        const response = await axios.get('/api/notifications', {
+const response = await axios.get('http://localhost:3000/api/notifications', {
             headers: { Authorization: `Bearer ${token}` }
         });
 
@@ -72,7 +72,8 @@ function updateNotificationList() {
 async function markAsRead(notificationId) {
     try {
         const token = localStorage.getItem('token');
-        await axios.patch(`/api/notifications/${notificationId}/read`, {}, {
+await axios.patch(`http://localhost:3000/api/notifications/${notificationId}/read`, {}, {
+
             headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -95,7 +96,8 @@ async function markAsRead(notificationId) {
 async function markAllAsRead() {
     try {
         const token = localStorage.getItem('token');
-        await axios.post('/api/notifications/read-all', {}, {
+await axios.post('http://localhost:3000/api/notifications/read-all', {}, {
+
             headers: { Authorization: `Bearer ${token}` }
         });
         
@@ -117,7 +119,8 @@ function startPolling() {
             const token = localStorage.getItem('token');
             if (!token) return;
             
-            const response = await axios.get('/api/notifications', {
+const response = await axios.get('http://localhost:3000/api/notifications', {
+
                 headers: { Authorization: `Bearer ${token}` }
             });
             
