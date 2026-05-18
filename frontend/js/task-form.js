@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             priority: document.getElementById('priority').value,
             status: document.getElementById('status').value,
             project: projectId,
-            assignedTo: document.getElementById('assignedTo').value || undefined
+            assignedTo: document.getElementById('assignedTo')?.value || undefined
         };
         
         try {
