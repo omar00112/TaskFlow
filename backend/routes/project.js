@@ -35,29 +35,43 @@ router.post("/", auth, async (req, res) => {
 // @route GET /api/projects
 // @desc Récupérer tous les projets de l'utilisateur connecté (paginations)
 // @access Privé
+// Récupérer tous les projets de l'utilisateur connecté avec filtrage et pagination
 router.get("/", auth, async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
-    const filter = {
+    const { status, search, page = 1, limit = 10 } = req.query;
+
+    // Filtre de base — projets dont l'utilisateur est propriétaire ou membre
+    const filtre = {
       $or: [
         { owner: req.user.id },
         { members: req.user.id }
       ]
     };
-    const projects = await Project.find(filter)
+
+    // Ajout conditionnel des filtres
+    if (status) filtre.status = status;
+    if (search) {
+      filtre.$or = [
+        ...filtre.$or,
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const projets = await Project.find(filtre)
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
-      .limit(limit);
-    const totalProjects = await Project.countDocuments(filter);
+      .limit(parseInt(limit));
+
+    const totalProjets = await Project.countDocuments(filtre);
+
     res.json({
-      projects,
-      totalProjects,
-      page,
-      totalPages: Math.ceil(totalProjects / limit),
+      projects: projets,
+      totalProjects: totalProjets,
+      page: parseInt(page),
+      totalPages: Math.ceil(totalProjets / parseInt(limit)),
     });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: err.message });
   }
 });
