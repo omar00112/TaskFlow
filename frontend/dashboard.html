@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TaskFlow — Tableau de bord</title>
+  <link rel="stylesheet" href="styleDashboard.css">
+</head>
+<body>
+  <div class="container">
+
+    <div class="header-right">
+      <div class="notification-area">
+        <div id="notificationIcon" class="bell-icon">
+          🔔
+          <span id="notificationBadge" class="badge" style="display:none;">0</span>
+        </div>
+        <div id="notificationDropdown" class="dropdown">
+          <div class="dropdown-header">
+            Notifications
+            <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+          </div>
+          <div id="notificationList" class="dropdown-list">
+            <div class="notification-item">Aucune notification</div>
+          </div>
+        </div>
+      </div>
+      <button onclick="seDeconnecter()" class="btn-logout">Se déconnecter</button>
+    </div>
+
+    <h1>Tableau de bord</h1>
+
+    <!-- Cartes des métriques personnelles -->
+    <div class="dashboard-summary">
+      <div class="stat-card">
+        <h3>Projets actifs</h3>
+        <p id="compteurProjetsActifs">—</p>
+      </div>
+      <div class="stat-card">
+        <h3>Tâches assignées</h3>
+        <p id="compteurTachesAssignees">—</p>
+      </div>
+      <div class="stat-card">
+        <h3>Tâches terminées</h3>
+        <p id="compteurTachesTerminees">—</p>
+      </div>
+      <div class="stat-card retard">
+        <h3>Tâches en retard</h3>
+        <p id="compteurTachesEnRetard">—</p>
+      </div>
+    </div>
+
+    <!-- Tâches en cours triées par priorité puis par date limite -->
+    <h2>Mes tâches en cours</h2>
+    <ul id="listeTachesEnCours"></ul>
+
+    <!-- Contrôles de filtrage des tâches -->
+    <h2>Mes tâches</h2>
+    <div class="filter-controls">
+      <input type="text" id="champRecherche" placeholder="Rechercher par titre ou description...">
+      <select id="filtreStatut">
+        <option value="">Tous les statuts</option>
+        <option value="à faire">À faire</option>
+        <option value="en cours">En cours</option>
+        <option value="terminé">Terminé</option>
+      </select>
+      <select id="filtrePriorite">
+        <option value="">Toutes les priorités</option>
+        <option value="haute">Haute</option>
+        <option value="moyenne">Moyenne</option>
+        <option value="basse">Basse</option>
+      </select>
+      <button id="boutonAppliquerFiltre">Filtrer</button>
+      <button id="boutonReinitialiser">Réinitialiser</button>
+    </div>
+    <ul id="listeTachesFiltrees"></ul>
+
+    <!-- Contrôles de filtrage des projets -->
+    <h2>Mes projets</h2>
+    <div class="filter-controls">
+      <input type="text" id="rechercheProjet" placeholder="Rechercher un projet...">
+      <select id="filtreStatutProjet">
+        <option value="">Tous les statuts</option>
+        <option value="active">Actif</option>
+        <option value="paused">En pause</option>
+        <option value="archived">Archivé</option>
+      </select>
+      <button id="boutonFiltrerProjets">Filtrer</button>
+    </div>
+    <ul id="listeProjets"></ul>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="js/notifications.js"></script>
+  <script src="js/dashboard.js"></script>
+</body>
+</html>
