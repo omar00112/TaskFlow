@@ -42,20 +42,21 @@ router.get("/", auth, async (req, res) => {
 
     // Filtre de base — projets dont l'utilisateur est propriétaire ou membre
     const filtre = {
-      $or: [
-        { owner: req.user.id },
-        { members: req.user.id }
-      ]
+        $and: [
+            { $or: [{ owner: req.user.id }, { members: req.user.id }] }
+          ]
     };
-
+    
     // Ajout conditionnel des filtres
-    if (status) filtre.status = status;
+
+    if (status) filtre.$and.push({ status: status });
     if (search) {
-      filtre.$or = [
-        ...filtre.$or,
-        { title: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } }
-      ];
+        filtre.$and.push({
+        $or: [
+          { title: { $regex: search, $options: 'i' } },
+          { description: { $regex: search, $options: 'i' } }
+        ]
+      });
     }
 
     const projets = await Project.find(filtre)
