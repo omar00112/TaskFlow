@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 const Notification = require("../models/Notification");
 const logActivity = require('../utils/logActivity');
+const checkProjectAccess = require("../middleware/checkProjectAccess");
 
 // Créer une tâche
 router.post("/", authMiddleware, async (req, res) => {
@@ -103,7 +104,7 @@ router.get("/assigned", authMiddleware, async (req, res) => {
 });
 
 // Récupérer les tâches d'un projet avec filtrage dynamique et pagination
-router.get("/project/:projectId", authMiddleware, async (req, res) => {
+router.get("/project/:projectId", authMiddleware,checkProjectAccess, async (req, res) => {
   try {
     const { status, priority, assignedTo, search, page = 1, limit = 10 } = req.query;
 
@@ -133,7 +134,7 @@ router.get("/project/:projectId", authMiddleware, async (req, res) => {
 });
 
 // Récupérer une tâche par son ID
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", authMiddleware,checkProjectAccess, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "ID invalide" });
