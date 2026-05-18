@@ -46,6 +46,11 @@
         window.location.href = 'index.html';
         return;
       }
+      // Vérification que l'identifiant du projet est présent dans l'URL
+      if (!projetId) {
+        document.getElementById('listeTaches').innerHTML = '<li>Identifiant du projet manquant dans l\'URL.</li>';
+        return;
+      }
       axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
       appliquerFiltres(1);
     };
