@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Chargement de toutes les données du tableau de bord en un seul appel Axios
 async function chargerTableauDeBord() {
   try {
-    const reponse = await axios.get('http://localhost:3000/api/dashboard');
+    const reponse = await axios.get("/api/dashboard");
     const donnees = reponse.data;
 
     // Affichage des métriques dans les cartes statistiques
@@ -57,7 +57,7 @@ async function chargerTaches(filtres) {
     if (filtres.priority) parametres.append('priority', filtres.priority);
     if (filtres.search)   parametres.append('search', filtres.search);
 
-    const reponse = await axios.get(`http://localhost:3000/api/tasks?${parametres}`);
+    const reponse = await axios.get(`/api/tasks?${parametres}`);
     const listeTaches = document.getElementById('listeTachesFiltrees');
 
     if (reponse.data.length === 0) {
@@ -84,7 +84,7 @@ async function chargerProjets(filtres) {
     if (filtres.status) parametres.append('status', filtres.status);
     if (filtres.search) parametres.append('search', filtres.search);
 
-    const reponse = await axios.get(`http://localhost:3000/api/projects?${parametres}`);
+    const reponse = await axios.get(`/api/projects?${parametres}`);
     const listeProjets = document.getElementById('listeProjets');
 
     if (reponse.data.projects.length === 0) {
