@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>TaskFlow — Tâches</title>
+  <link rel="stylesheet" href="styleDashboard.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Tâches du projet</h1>
+
+    <!-- Contrôles de filtrage et de recherche -->
+    <div class="filter-controls">
+      <input type="text" id="recherche" placeholder="Rechercher par titre...">
+      <select id="filtreStatut">
+        <option value="">Tous les statuts</option>
+        <option value="à faire">À faire</option>
+        <option value="en cours">En cours</option>
+        <option value="terminé">Terminé</option>
+      </select>
+      <select id="filtrePriorite">
+        <option value="">Toutes les priorités</option>
+        <option value="haute">Haute</option>
+        <option value="moyenne">Moyenne</option>
+        <option value="basse">Basse</option>
+      </select>
+      <button onclick="appliquerFiltres()">Filtrer</button>
+      <button onclick="reinitialiserFiltres()">Réinitialiser</button>
+    </div>
+
+    <!-- Liste des tâches filtrées avec pagination -->
+    <ul id="listeTaches"></ul>
+
+    <!-- Navigation entre les pages -->
+    <div id="pagination"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+    const parametresUrl = new URLSearchParams(window.location.search);
+    const projetId = parametresUrl.get('projectId');
+
+    window.onload = function () {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = 'index.html';
+        return;
+      }
+      // Vérification que l'identifiant du projet est présent dans l'URL
+      if (!projetId) {
+        document.getElementById('listeTaches').innerHTML = '<li>Identifiant du projet manquant dans l\'URL.</li>';
+        return;
+      }
+      axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+      appliquerFiltres(1);
+    };
+
+    async function appliquerFiltres(page = 1) {
+      try {
+        const parametres = new URLSearchParams({ page, limit: 5 });
+
+        const recherche = document.getElementById('recherche').value.trim();
+        const statut    = document.getElementById('filtreStatut').value;
+        const priorite  = document.getElementById('filtrePriorite').value;
+
+        if (recherche) parametres.append('search', recherche);
+        if (statut)    parametres.append('status', statut);
+        if (priorite)  parametres.append('priority', priorite);
+
+        const reponse = await axios.get(
+          `http://localhost:3000/api/tasks/project/${projetId}?${parametres}`
+        );
+        const { data, total, totalPages } = reponse.data;
+
+        const listeTaches = document.getElementById('listeTaches');
+        if (data.length === 0) {
+          listeTaches.innerHTML = '<li>Aucune tâche trouvée.</li>';
+        } else {
+          listeTaches.innerHTML = data.map(t => `
+            <li>
+              <strong>${t.title}</strong> —
+              Statut : ${t.status} —
+              Priorité : ${t.priority}
+              ${t.assignedTo ? '— Assigné à : ' + t.assignedTo.fullName : ''}
+            </li>
+          `).join('');
+        }
+
+        document.getElementById('pagination').innerHTML = `
+          ${page > 1 ? `<button onclick="appliquerFiltres(${page - 1})">Précédent</button>` : ''}
+          <span>Page ${page} / ${totalPages} — ${total} tâche(s)</span>
+          ${page < totalPages ? `<button onclick="appliquerFiltres(${page + 1})">Suivant</button>` : ''}
+        `;
+
+      } catch (erreur) {
+        console.error('Erreur lors du chargement des tâches :', erreur);
+      }
+    }
+
+    function reinitialiserFiltres() {
+      document.getElementById('recherche').value      = '';
+      document.getElementById('filtreStatut').value   = '';
+      document.getElementById('filtrePriorite').value = '';
+      appliquerFiltres(1);
+    }
+  </script>
+</body>
+</html>

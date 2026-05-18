@@ -11,7 +11,7 @@ router.get('/', auth, async (req, res) => {
             .limit(50);
         res.json(notifications);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -24,7 +24,7 @@ router.get('/unread/count', auth, async (req, res) => {
         });
         res.json({ count });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -41,7 +41,7 @@ router.patch('/:id/read', auth, async (req, res) => {
         }
         res.json(notification);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 
@@ -54,7 +54,7 @@ router.post('/read-all', auth, async (req, res) => {
         );
         res.json({ message: 'Toutes les notifications ont été marquées comme lues' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ message: error.message });
     }
 });
 

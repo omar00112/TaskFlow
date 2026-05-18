@@ -9,6 +9,7 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/project'); // Import des routes projets
 const activityRoutes = require('./routes/activity');
+const dashboardRoutes = require('./routes/dashboard');
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -22,7 +23,7 @@ app.use('/api/projects', projectRoutes); // Routes des projets
 app.use('/api/projects', activityRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use('/api/notifications', notificationRoutes);
-
+app.use('/api/dashboard', dashboardRoutes);
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));

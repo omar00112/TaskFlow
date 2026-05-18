@@ -82,7 +82,7 @@ async function loadProjectInfo() {
         
         const projectNameInput = document.getElementById('projectName');
         if (projectNameInput) {
-            projectNameInput.value = response.data.name;
+            projectNameInput.value = response.data.title;
         }
         
         const projectIdInput = document.getElementById('projectIdInput');
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', function() {
             priority: document.getElementById('priority').value,
             status: document.getElementById('status').value,
             project: projectId,
-            assignedTo: document.getElementById('assignedTo').value || undefined
+            assignedTo: document.getElementById('assignedTo')?.value || undefined
         };
         
         try {
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             deleteDraft();
             alert('✅ Tâche créée avec succès !');
-            window.location.href = 'tasks.html';
+            window.location.href = `tasks.html?projectId=${projectId}`;
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de la création de la tâche');

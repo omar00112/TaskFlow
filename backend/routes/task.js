@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const mongoose = require("mongoose");
 const Notification = require("../models/Notification");
 const logActivity = require('../utils/logActivity');
+const checkProjectAccess = require("../middleware/checkProjectAccess");
 
 // Créer une tâche
 router.post("/", authMiddleware, async (req, res) => {
@@ -62,6 +63,33 @@ router.post("/", authMiddleware, async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
+// Récupérer toutes les tâches de l'utilisateur avec filtrage dynamique
+router.get("/", authMiddleware, async (req, res) => {
+  try {
+    const { status, priority, projectId, assignedTo, search } = req.query;
+
+    // Construction conditionnelle du filtre — une condition n'est ajoutée que si le paramètre est présent
+    const filtre = { assignedTo: req.user.id };
+    if (status)     filtre.status = status;
+    if (priority)   filtre.priority = priority;
+    if (projectId)  filtre.project = projectId;
+    if (assignedTo) filtre.assignedTo = assignedTo;
+    if (search) {
+      filtre.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const taches = await Task.find(filtre)
+      .populate('project', 'title')
+      .populate('assignedTo', 'fullName email');
+
+    res.json(taches);
+  } catch (erreur) {
+    res.status(500).json({ message: erreur.message });
+  }
+});
 
 // Récupérer toutes les tâches assignées à l'utilisateur connecté (tableau de bord)
 router.get("/assigned", authMiddleware, async (req, res) => {
@@ -75,19 +103,38 @@ router.get("/assigned", authMiddleware, async (req, res) => {
   }
 });
 
-// Récupérer toutes les tâches d'un projet
-router.get("/project/:projectId", authMiddleware, async (req, res) => {
+// Récupérer les tâches d'un projet avec filtrage dynamique et pagination
+router.get("/project/:projectId", authMiddleware,checkProjectAccess, async (req, res) => {
   try {
-    const tasks = await Task.find({ project: req.params.projectId })
-      .populate("assignedTo", "fullName email");
-    res.json(tasks);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const { status, priority, assignedTo, search, page = 1, limit = 10 } = req.query;
+
+    // Construction conditionnelle du filtre Mongoose
+    const filtre = { project: req.params.projectId };
+    if (status)     filtre.status = status;
+    if (priority)   filtre.priority = priority;
+    if (assignedTo) filtre.assignedTo = assignedTo;
+    if (search)     filtre.title = { $regex: search, $options: 'i' };
+
+    const total = await Task.countDocuments(filtre);
+    const taches = await Task.find(filtre)
+      .populate('assignedTo', 'fullName email')
+      .skip((parseInt(page) - 1) * parseInt(limit))
+      .limit(parseInt(limit));
+
+    // Retourner les données avec les informations de pagination
+    res.json({
+      data: taches,
+      total,
+      page: parseInt(page),
+      totalPages: Math.ceil(total / parseInt(limit))
+    });
+  } catch (erreur) {
+    res.status(500).json({ message: erreur.message });
   }
 });
 
 // Récupérer une tâche par son ID
-router.get("/:id", authMiddleware, async (req, res) => {
+router.get("/:id", authMiddleware,checkProjectAccess, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
       return res.status(400).json({ message: "ID invalide" });

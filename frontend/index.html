@@ -88,7 +88,7 @@
             const token = localStorage.getItem('token');
             if (token) {
                 axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-                showDashboard();
+                window.location.href = 'dashboard.html';
             }
         };
 
@@ -173,7 +173,7 @@
                 const res = await axios.post(`${API_URL}/login`, { email, password });
                 localStorage.setItem('token', res.data.token);
                 axios.defaults.headers.common['Authorization'] = 'Bearer ' + res.data.token;
-                showDashboard();
+                window.location.href = 'dashboard.html';
             } catch (err) {
                 const errorMsg = err.response?.data?.message || "Identifiants incorrects";
                 displayMessage(errorMsg);

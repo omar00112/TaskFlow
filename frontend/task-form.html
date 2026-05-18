@@ -113,11 +113,17 @@
         <label>Projet</label>
         <input type="text" id="projectName" readonly disabled style="background-color:#f0f0f0">
     </div>
+    <div class="form-group">
+      <label>Assigner à</label>
+      <select id="assignedTo">
+        <option value="">— Non assigné —</option>
+      </select>
+   </div>
 
     <button type="submit">Créer la tâche</button>
         </form>
     </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="js/task-form.js"></script>
 </body>
 </html>
