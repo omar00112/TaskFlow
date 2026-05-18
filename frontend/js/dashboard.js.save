@@ -84,7 +84,7 @@ async function chargerProjets(filtres) {
     if (filtres.status) parametres.append('status', filtres.status);
     if (filtres.search) parametres.append('search', filtres.search);
 
-    const reponse = await axios.get(`http://localhost:3000/api/projects?${parametres}`);
+    const repon`);
     const listeProjets = document.getElementById('listeProjets');
 
     if (reponse.data.projects.length === 0) {
