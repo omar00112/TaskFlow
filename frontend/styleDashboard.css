@@ -1,0 +1,251 @@
+/* ========== TABLEAU DE BORD ========== */
+
+.header-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.btn-logout {
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.btn-logout:hover {
+  background-color: #c0392b;
+}
+
+/* Cartes des métriques */
+.dashboard-summary {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 30px;
+}
+
+.stat-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 10px;
+  padding: 20px 30px;
+  flex: 1;
+  min-width: 150px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+}
+
+.stat-card h3 {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 10px;
+}
+
+.stat-card p {
+  font-size: 32px;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+/* Carte tâches en retard — couleur rouge */
+.stat-card.retard p {
+  color: #e74c3c;
+}
+
+/* Listes des tâches et projets */
+#listeTachesEnCours,
+#listeTachesFiltrees,
+#listeProjets {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 30px;
+}
+
+#listeTachesEnCours li,
+#listeTachesFiltrees li,
+#listeProjets li {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #2c3e50;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Contrôles de filtrage */
+.filter-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 15px;
+  align-items: center;
+}
+
+.filter-controls input,
+.filter-controls select {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  flex: 1;
+  min-width: 150px;
+}
+
+.filter-controls button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  background-color: #3498db;
+  color: white;
+}
+
+.filter-controls button:hover {
+  background-color: #2980b9;
+}
+
+#boutonReinitialiser {
+  background-color: #95a5a6;
+}
+
+#boutonReinitialiser:hover {
+  background-color: #7f8c8d;
+}
+
+/* ========== NOTIFICATIONS ========== */
+
+.notification-area {
+  position: relative;
+}
+
+.bell-icon {
+  font-size: 22px;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  user-select: none;
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  background-color: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  font-size: 11px;
+  padding: 2px 6px;
+  font-weight: bold;
+}
+
+/* Le dropdown s'ouvre via la classe .show ajoutée par notifications.js */
+.dropdown {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 35px;
+  background-color: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.dropdown.show {
+  display: block;
+}
+
+.dropdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  border-bottom: 1px solid #eee;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.mark-all-btn {
+  background: none;
+  border: none;
+  color: #3498db;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.dropdown-list {
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: 10px 15px;
+  font-size: 13px;
+  color: #555;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+}
+
+.notification-item:last-child {
+  border-bottom: none;
+}
+
+/* Notification non lue — fond légèrement coloré */
+.notification-item.unread {
+  background-color: #eaf4fb;
+  font-weight: bold;
+}
+
+/* ========== PAGE TÂCHES (tasks.html) ========== */
+
+#listeTaches {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+#listeTaches li {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #2c3e50;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Pagination */
+#pagination {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 10px;
+  font-size: 14px;
+  color: #555;
+}
+
+#pagination button {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #3498db;
+  color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#pagination button:hover {
+  background-color: #2980b9;
+}
