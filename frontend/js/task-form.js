@@ -82,7 +82,7 @@ async function loadProjectInfo() {
         
         const projectNameInput = document.getElementById('projectName');
         if (projectNameInput) {
-            projectNameInput.value = response.data.name;
+            projectNameInput.value = response.data.title;
         }
         
         const projectIdInput = document.getElementById('projectIdInput');
