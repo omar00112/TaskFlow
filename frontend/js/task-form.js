@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             deleteDraft();
             alert('✅ Tâche créée avec succès !');
-            window.location.href = 'tasks.html';
+            window.location.href = `tasks.html?projectId=${projectId}`;
         } catch (error) {
             console.error('Erreur:', error);
             alert('Erreur lors de la création de la tâche');
