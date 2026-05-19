@@ -124,7 +124,10 @@ router.put("/:id", auth, async (req, res) => {
     project = await Project.findOneAndUpdate(
       { _id: req.params.id, owner: req.user.id },
       { $set: projectFields },
-      { new: true }
+      {
+        new: true,
+        runValidators: true
+      }
     );
     await logActivity('project_updated', req.params.id, req.user.id, { title: project.title });
     res.json(project);
