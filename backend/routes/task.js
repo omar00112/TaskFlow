@@ -82,7 +82,6 @@ router.get("/", authMiddleware, async (req, res) => {
     if (status)     filtre.status = status;
     if (priority)   filtre.priority = priority;
     if (projectId)  filtre.project = projectId;
-    if (assignedTo) filtre.assignedTo = assignedTo;
     if (search) {
       filtre.$or = [
         { title: { $regex: search, $options: 'i' } },
