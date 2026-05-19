@@ -21,20 +21,29 @@ router.post("/", authMiddleware, async (req, res) => {
 
     const projectExists = await Project.findById(project);
     if (!projectExists) {
-      return res.status(404).json({ message: "Projet introuvable" });
+       return res.status(404).json({ message: "Projet introuvable" });
     }
 
-    if (assignedTo) {
-      const projectData = await Project.findById(project);
-      const allowed =
-        projectData.owner.toString() === assignedTo ||
-        projectData.members.some(m => m.toString() === assignedTo);
-      if (!allowed) {
-        return res.status(400).json({
-          message: "L'utilisateur assigné ne fait pas partie de ce projet",
-        });
-      }
+    // vérifier que l'utilisateur connecté appartient au projet
+    const currentUserAllowed =
+    projectExists.owner.toString() === req.user.id ||
+    projectExists.members.some(m => m.toString() === req.user.id);
+
+    if (!currentUserAllowed) {
+      return res.status(403).json({ message: "Accès refusé" });
     }
+
+    // vérifier que l'utilisateur assigné appartient au projet
+    if (assignedTo) {
+       const assignedAllowed =
+       projectExists.owner.toString() === assignedTo ||
+       projectExists.members.some(m => m.toString() === assignedTo);
+    if (!assignedAllowed) {
+        return res.status(400).json({
+         message: "L'utilisateur assigné ne fait pas partie de ce projet",
+    });
+  }
+}
 
     const task = await Task.create({
       title,
@@ -73,7 +82,6 @@ router.get("/", authMiddleware, async (req, res) => {
     if (status)     filtre.status = status;
     if (priority)   filtre.priority = priority;
     if (projectId)  filtre.project = projectId;
-    if (assignedTo) filtre.assignedTo = assignedTo;
     if (search) {
       filtre.$or = [
         { title: { $regex: search, $options: 'i' } },
