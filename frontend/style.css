@@ -10,9 +10,11 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    padding: 20px;
 }
 
+/* Container for login/register forms (narrow) */
 .container {
     background-color: white;
     padding: 40px;
@@ -21,6 +23,15 @@ body {
     width: 100%;
     max-width: 400px;
     text-align: center;
+}
+
+/* Dashboard container (wider) */
+#dashboard {
+    max-width: 900px;
+    margin: 0 auto;
+    background: transparent;
+    padding: 0;
+    text-align: left;
 }
 
 h1 {
@@ -36,13 +47,21 @@ h2 {
     font-size: 22px;
 }
 
+h3 {
+    margin: 0 0 15px 0;
+    color: #2c3e50;
+    border-bottom: 2px solid #3498db;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
 p {
     margin-top: 15px;
     font-size: 14px;
     color: #666;
 }
 
-/* Champs de saisie */
+/* Form inputs (shared) */
 input {
     width: 100%;
     padding: 12px;
@@ -58,10 +77,8 @@ input:focus {
     border-color: #4a90e2;
 }
 
-/* Boutons */
+/* Buttons */
 button {
-    width: 100%;
-    padding: 12px;
     background-color: #4a90e2;
     color: white;
     border: none;
@@ -76,55 +93,17 @@ button:hover {
     background-color: #357abd;
 }
 
-.btn-logout {
-    background-color: #e74c3c;
-    margin-top: 20px;
-}
-
-button.btn-logout:hover {
-    background-color: #c0392b;
-}
-
-/* Liens */
-span {
-    color: #4a90e2;
-    cursor: pointer;
-    font-weight: 600;
-}
-
-span:hover {
-    text-decoration: underline;
-}
-
-/* Messages */
-#message {
-    margin-top: 20px;
-    font-size: 14px;
-    min-height: 20px;
-}
-
-.error {
-    color: #e74c3c;
-}
-
-.success {
-    color: #2ecc71;
-}
-
-/* NOTIFICATIONS - (F10)  */
-
-
+/* Dashboard header */
 .header-right {
     display: flex;
-    align-items: center;
     justify-content: flex-end;
-    margin-bottom: 20px;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
 }
 
 .notification-area {
     position: relative;
-    display: inline-block;
-    margin-right: 20px;
 }
 
 .bell-icon {
@@ -196,5 +175,195 @@ span:hover {
 }
 
 .logout-btn {
-    margin-left: 20px;
+    background-color: #e74c3c;
+    padding: 8px 16px;
+    border-radius: 6px;
+}
+
+.logout-btn:hover {
+    background-color: #c0392b;
+}
+
+/* Welcome message */
+.welcome {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.welcome h2 {
+    margin-bottom: 5px;
+}
+
+/* Card style for sections */
+.card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Project form */
+.project-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.project-form input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.project-form button {
+    width: auto;
+    padding: 12px 20px;
+}
+
+/* Project list */
+.project-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.project-item {
+    background: #f9f9f9;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-title {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.project-actions button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 14px;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.project-actions button:first-child {
+    color: #f39c12;
+}
+
+.project-actions button:first-child:hover {
+    background-color: #fef5e7;
+}
+
+.project-actions button:last-child {
+    color: #e74c3c;
+}
+
+.project-actions button:last-child:hover {
+    background-color: #fdedeb;
+}
+
+/* Activity input */
+.activity-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.activity-input input {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.activity-input button {
+    width: auto;
+    background-color: #2ecc71;
+    padding: 12px 20px;
+}
+
+.activity-input button:hover {
+    background-color: #27ae60;
+}
+
+/* Activity list */
+#activity-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#activity-list li {
+    background: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    padding: 10px 12px;
+    font-size: 14px;
+    color: #555;
+    border-radius: 6px;
+    margin-bottom: 5px;
+}
+
+/* Navigation tabs */
+.nav-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 10px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 16px;
+    font-size: 16px;
+    cursor: pointer;
+    color: #555;
+    transition: 0.2s;
+    font-weight: normal;
+}
+
+.tab-btn.active {
+    color: #4a90e2;
+    border-bottom: 2px solid #4a90e2;
+    font-weight: bold;
+}
+
+.tab-content {
+    animation: fade 0.2s ease;
+}
+
+@keyframes fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Links */
+span {
+    color: #4a90e2;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+span:hover {
+    text-decoration: underline;
+}
+
+/* Messages */
+#message {
+    margin-top: 20px;
+    font-size: 14px;
+    min-height: 20px;
+}
+
+.error {
+    color: #e74c3c;
+}
+
+.success {
+    color: #2ecc71;
 }
