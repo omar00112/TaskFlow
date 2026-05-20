@@ -3,24 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TaskFlow - Tâches</title>
+    <title>TaskFlow - TÃ¢ches</title>
     <link rel="stylesheet" href="style.css">
     <style>
         .task-item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
         .task-title { font-weight: bold; }
         .task-meta { font-size: 0.9em; color: #555; margin-top: 5px; }
-        /* Forced single-line filter bar on wide screens */
-        .filter-bar {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 12px;
-            margin-bottom: 20px;
-            align-items: flex-end;
-        }
-        .filter-group {
-            flex: 1;
-            min-width: 0; /* prevents overflow */
-        }
+        
+      
         .filter-group label {
             font-size: 12px;
             font-weight: bold;
@@ -62,39 +52,49 @@
             background: #aaa;
             cursor: not-allowed;
         }
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .filter-group {
+            min-width: 0;
+            flex: 1;
+            overflow: hidden; 
+        }
     </style>
 </head>
 <body>
 <div class="container" style="max-width: 900px;">
     <div class="header-right">
-        <button onclick="window.location.href='dashboard.html'" style="background:#4a90e2; padding:6px 12px;">← Retour au tableau de bord</button>
-        <button onclick="logout()" class="logout-btn">Se déconnecter</button>
+        <button onclick="window.location.href='dashboard.html'" style="background:#4a90e2; padding:6px 12px;">â† Retour au tableau de bord</button>
+        <button onclick="logout()" class="logout-btn">Se dÃ©connecter</button>
     </div>
 
     <div class="welcome">
-        <h2>Gestion des tâches</h2>
+        <h2>Gestion des tÃ¢ches</h2>
         <p id="projectTitle"></p>
     </div>
 
     <div class="card">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3>📋 Liste des tâches</h3>
-            <button onclick="createTask()">+ Nouvelle tâche</button>
+            <h3>ðŸ“‹ Liste des tÃ¢ches</h3>
+            <button onclick="createTask()">+ Nouvelle tÃ¢che</button>
         </div>
 
-        <!-- Filtres – all in one line -->
+        <!-- Filtres â€“ all in one line -->
         <div class="filter-bar">
             <div class="filter-group">
                 <label>Statut</label>
                 <select id="filterStatus">
                     <option value="">Tous</option>
-                    <option value="à faire">À faire</option>
+                    <option value="Ã  faire">Ã€ faire</option>
                     <option value="en cours">En cours</option>
-                    <option value="terminé">Terminé</option>
+                    <option value="terminÃ©">TerminÃ©</option>
                 </select>
             </div>
             <div class="filter-group">
-                <label>Priorité</label>
+                <label>PrioritÃ©</label>
                 <select id="filterPriority">
                     <option value="">Toutes</option>
                     <option value="basse">Basse</option>
@@ -104,11 +104,11 @@
             </div>
             <div class="filter-group">
                 <label>Recherche (titre)</label>
-                <input type="text" id="filterSearch" placeholder="Mots-clés...">
+                <input type="text" id="filterSearch" placeholder="Mots-clÃ©s...">
             </div>
             <div class="filter-actions">
                 <button onclick="applyFilters()">Filtrer</button>
-                <button onclick="resetFilters()" style="background:#95a5a6;">Réinitialiser</button>
+                <button onclick="resetFilters()" style="background:#95a5a6;">RÃ©initialiser</button>
             </div>
         </div>
 
@@ -116,9 +116,9 @@
 
         <!-- Pagination -->
         <div class="pagination" id="paginationControls" style="display: none;">
-            <button id="prevPageBtn" onclick="changePage(-1)">◀ Précédent</button>
+            <button id="prevPageBtn" onclick="changePage(-1)">â—€ PrÃ©cÃ©dent</button>
             <span id="pageInfo">Page 1 / 1</span>
-            <button id="nextPageBtn" onclick="changePage(1)">Suivant ▶</button>
+            <button id="nextPageBtn" onclick="changePage(1)">Suivant â–¶</button>
         </div>
     </div>
 </div>
@@ -139,7 +139,7 @@
         const urlParams = new URLSearchParams(window.location.search);
         projectId = urlParams.get('projectId');
         if (!projectId) {
-            alert("Aucun projet sélectionné");
+            alert("Aucun projet sÃ©lectionnÃ©");
             window.location.href = 'dashboard.html';
             return;
         }
@@ -172,30 +172,30 @@
 
             const container = document.getElementById('tasksList');
             if (!tasks.length) {
-                container.innerHTML = '<p>Aucune tâche correspondante.</p>';
+                container.innerHTML = '<p>Aucune tÃ¢che correspondante.</p>';
                 return;
             }
             container.innerHTML = tasks.map(task => {
                 let dueDateHtml = '';
                 if (task.dueDate) {
                     const formattedDate = new Date(task.dueDate).toLocaleDateString('fr-FR');
-                    dueDateHtml = ` | Échéance : ${formattedDate}`;
+                    dueDateHtml = ` | Ã‰chÃ©ance : ${formattedDate}`;
                 }
                 return `
                 <div class="task-item">
                     <div class="task-title">${escapeHtml(task.title)}</div>
                     <div class="task-meta">
-                        Priorité: ${task.priority} | Statut: 
+                        PrioritÃ©: ${task.priority} | Statut: 
                         <select onchange="updateStatus('${task._id}', this.value)">
-                            <option value="à faire" ${task.status === 'à faire' ? 'selected' : ''}>À faire</option>
+                            <option value="Ã  faire" ${task.status === 'Ã  faire' ? 'selected' : ''}>Ã€ faire</option>
                             <option value="en cours" ${task.status === 'en cours' ? 'selected' : ''}>En cours</option>
-                            <option value="terminé" ${task.status === 'terminé' ? 'selected' : ''}>Terminé</option>
+                            <option value="terminÃ©" ${task.status === 'terminÃ©' ? 'selected' : ''}>TerminÃ©</option>
                         </select>
                         ${dueDateHtml}
-                        ${task.assignedTo ? `| Assigné à: ${task.assignedTo.fullName || task.assignedTo.email}` : ''}
+                        ${task.assignedTo ? `| AssignÃ© Ã : ${task.assignedTo.fullName || task.assignedTo.email}` : ''}
                     </div>
                     <div class="task-actions">
-                        <button onclick="deleteTask('${task._id}')">🗑️ Supprimer</button>
+                        <button onclick="deleteTask('${task._id}')">ðŸ—‘ï¸ Supprimer</button>
                     </div>
                 </div>
             `}).join('');
@@ -241,11 +241,11 @@
         try {
             await axios.patch(`${API_BASE}/tasks/${taskId}/status`, { status: newStatus });
             loadTasks();
-        } catch (err) { alert("Erreur mise à jour du statut"); }
+        } catch (err) { alert("Erreur mise Ã  jour du statut"); }
     }
 
     async function deleteTask(taskId) {
-        if (!confirm("Supprimer cette tâche ?")) return;
+        if (!confirm("Supprimer cette tÃ¢che ?")) return;
         try {
             await axios.delete(`${API_BASE}/tasks/${taskId}`);
             const remaining = document.querySelectorAll('.task-item').length;
