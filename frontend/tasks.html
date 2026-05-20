@@ -1,108 +1,272 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>TaskFlow — Tâches</title>
-  <link rel="stylesheet" href="styleDashboard.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Tâches</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .task-item { background: #f9f9f9; border: 1px solid #ddd; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+        .task-title { font-weight: bold; }
+        .task-meta { font-size: 0.9em; color: #555; margin-top: 5px; }
+        /* Forced single-line filter bar on wide screens */
+        .filter-bar {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 12px;
+            margin-bottom: 20px;
+            align-items: flex-end;
+        }
+        .filter-group {
+            flex: 1;
+            min-width: 0; /* prevents overflow */
+        }
+        .filter-group label {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .filter-group select, .filter-group input {
+            width: 100%;
+            padding: 6px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .filter-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+        @media (max-width: 750px) {
+            .filter-bar {
+                flex-wrap: wrap;
+            }
+            .filter-group {
+                min-width: 140px;
+            }
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .pagination button {
+            background: #3498db;
+            padding: 6px 12px;
+            font-size: 14px;
+        }
+        .pagination button:disabled {
+            background: #aaa;
+            cursor: not-allowed;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Tâches du projet</h1>
-
-    <!-- Contrôles de filtrage et de recherche -->
-    <div class="filter-controls">
-      <input type="text" id="recherche" placeholder="Rechercher par titre...">
-      <select id="filtreStatut">
-        <option value="">Tous les statuts</option>
-        <option value="à faire">À faire</option>
-        <option value="en cours">En cours</option>
-        <option value="terminé">Terminé</option>
-      </select>
-      <select id="filtrePriorite">
-        <option value="">Toutes les priorités</option>
-        <option value="haute">Haute</option>
-        <option value="moyenne">Moyenne</option>
-        <option value="basse">Basse</option>
-      </select>
-      <button onclick="appliquerFiltres()">Filtrer</button>
-      <button onclick="reinitialiserFiltres()">Réinitialiser</button>
+<div class="container" style="max-width: 900px;">
+    <div class="header-right">
+        <button onclick="window.location.href='dashboard.html'" style="background:#4a90e2; padding:6px 12px;">← Retour au tableau de bord</button>
+        <button onclick="logout()" class="logout-btn">Se déconnecter</button>
     </div>
 
-    <!-- Liste des tâches filtrées avec pagination -->
-    <ul id="listeTaches"></ul>
+    <div class="welcome">
+        <h2>Gestion des tâches</h2>
+        <p id="projectTitle"></p>
+    </div>
 
-    <!-- Navigation entre les pages -->
-    <div id="pagination"></div>
-  </div>
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3>📋 Liste des tâches</h3>
+            <button onclick="createTask()">+ Nouvelle tâche</button>
+        </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script>
-    const parametresUrl = new URLSearchParams(window.location.search);
-    const projetId = parametresUrl.get('projectId');
+        <!-- Filtres – all in one line -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Statut</label>
+                <select id="filterStatus">
+                    <option value="">Tous</option>
+                    <option value="à faire">À faire</option>
+                    <option value="en cours">En cours</option>
+                    <option value="terminé">Terminé</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Priorité</label>
+                <select id="filterPriority">
+                    <option value="">Toutes</option>
+                    <option value="basse">Basse</option>
+                    <option value="moyenne">Moyenne</option>
+                    <option value="haute">Haute</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Recherche (titre)</label>
+                <input type="text" id="filterSearch" placeholder="Mots-clés...">
+            </div>
+            <div class="filter-actions">
+                <button onclick="applyFilters()">Filtrer</button>
+                <button onclick="resetFilters()" style="background:#95a5a6;">Réinitialiser</button>
+            </div>
+        </div>
 
-    window.onload = function () {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        window.location.href = 'index.html';
-        return;
-      }
-      // Vérification que l'identifiant du projet est présent dans l'URL
-      if (!projetId) {
-        document.getElementById('listeTaches').innerHTML = '<li>Identifiant du projet manquant dans l\'URL.</li>';
-        return;
-      }
-      axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-      appliquerFiltres(1);
+        <div id="tasksList"></div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="paginationControls" style="display: none;">
+            <button id="prevPageBtn" onclick="changePage(-1)">◀ Précédent</button>
+            <span id="pageInfo">Page 1 / 1</span>
+            <button id="nextPageBtn" onclick="changePage(1)">Suivant ▶</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const API_BASE = 'http://localhost:3000/api';
+    let projectId = null;
+    let currentPage = 1;
+    const limit = 5;
+    let totalPages = 1;
+
+    window.onload = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) { window.location.href = 'index.html'; return; }
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        projectId = urlParams.get('projectId');
+        if (!projectId) {
+            alert("Aucun projet sélectionné");
+            window.location.href = 'dashboard.html';
+            return;
+        }
+        await loadProjectInfo();
+        await loadTasks();
     };
 
-    async function appliquerFiltres(page = 1) {
-      try {
-        const parametres = new URLSearchParams({ page, limit: 5 });
+    async function loadProjectInfo() {
+        try {
+            const res = await axios.get(`${API_BASE}/projects/${projectId}`);
+            document.getElementById('projectTitle').innerHTML = `<strong>Projet :</strong> ${escapeHtml(res.data.title)}`;
+        } catch (err) { console.error(err); }
+    }
 
-        const recherche = document.getElementById('recherche').value.trim();
-        const statut    = document.getElementById('filtreStatut').value;
-        const priorite  = document.getElementById('filtrePriorite').value;
+    async function loadTasks() {
+        const status = document.getElementById('filterStatus').value;
+        const priority = document.getElementById('filterPriority').value;
+        const search = document.getElementById('filterSearch').value.trim();
 
-        if (recherche) parametres.append('search', recherche);
-        if (statut)    parametres.append('status', statut);
-        if (priorite)  parametres.append('priority', priorite);
+        let url = `${API_BASE}/tasks/project/${projectId}?page=${currentPage}&limit=${limit}`;
+        if (status) url += `&status=${encodeURIComponent(status)}`;
+        if (priority) url += `&priority=${encodeURIComponent(priority)}`;
+        if (search) url += `&search=${encodeURIComponent(search)}`;
 
-        const reponse = await axios.get(
-          `http://localhost:3000/api/tasks/project/${projetId}?${parametres}`
-        );
-        const { data, total, totalPages } = reponse.data;
+        try {
+            const res = await axios.get(url);
+            const tasks = res.data.data;
+            totalPages = res.data.totalPages;
+            updatePaginationControls();
 
-        const listeTaches = document.getElementById('listeTaches');
-        if (data.length === 0) {
-          listeTaches.innerHTML = '<li>Aucune tâche trouvée.</li>';
-        } else {
-          listeTaches.innerHTML = data.map(t => `
-            <li>
-              <strong>${t.title}</strong> —
-              Statut : ${t.status} —
-              Priorité : ${t.priority}
-              ${t.assignedTo ? '— Assigné à : ' + t.assignedTo.fullName : ''}
-            </li>
-          `).join('');
+            const container = document.getElementById('tasksList');
+            if (!tasks.length) {
+                container.innerHTML = '<p>Aucune tâche correspondante.</p>';
+                return;
+            }
+            container.innerHTML = tasks.map(task => {
+                let dueDateHtml = '';
+                if (task.dueDate) {
+                    const formattedDate = new Date(task.dueDate).toLocaleDateString('fr-FR');
+                    dueDateHtml = ` | Échéance : ${formattedDate}`;
+                }
+                return `
+                <div class="task-item">
+                    <div class="task-title">${escapeHtml(task.title)}</div>
+                    <div class="task-meta">
+                        Priorité: ${task.priority} | Statut: 
+                        <select onchange="updateStatus('${task._id}', this.value)">
+                            <option value="à faire" ${task.status === 'à faire' ? 'selected' : ''}>À faire</option>
+                            <option value="en cours" ${task.status === 'en cours' ? 'selected' : ''}>En cours</option>
+                            <option value="terminé" ${task.status === 'terminé' ? 'selected' : ''}>Terminé</option>
+                        </select>
+                        ${dueDateHtml}
+                        ${task.assignedTo ? `| Assigné à: ${task.assignedTo.fullName || task.assignedTo.email}` : ''}
+                    </div>
+                    <div class="task-actions">
+                        <button onclick="deleteTask('${task._id}')">🗑️ Supprimer</button>
+                    </div>
+                </div>
+            `}).join('');
+        } catch (err) {
+            console.error(err);
+            document.getElementById('tasksList').innerHTML = '<p>Erreur de chargement.</p>';
         }
-
-        document.getElementById('pagination').innerHTML = `
-          ${page > 1 ? `<button onclick="appliquerFiltres(${page - 1})">Précédent</button>` : ''}
-          <span>Page ${page} / ${totalPages} — ${total} tâche(s)</span>
-          ${page < totalPages ? `<button onclick="appliquerFiltres(${page + 1})">Suivant</button>` : ''}
-        `;
-
-      } catch (erreur) {
-        console.error('Erreur lors du chargement des tâches :', erreur);
-      }
     }
 
-    function reinitialiserFiltres() {
-      document.getElementById('recherche').value      = '';
-      document.getElementById('filtreStatut').value   = '';
-      document.getElementById('filtrePriorite').value = '';
-      appliquerFiltres(1);
+    function updatePaginationControls() {
+        const controls = document.getElementById('paginationControls');
+        if (totalPages <= 1) {
+            controls.style.display = 'none';
+        } else {
+            controls.style.display = 'flex';
+            document.getElementById('pageInfo').innerText = `Page ${currentPage} / ${totalPages}`;
+            document.getElementById('prevPageBtn').disabled = (currentPage === 1);
+            document.getElementById('nextPageBtn').disabled = (currentPage === totalPages);
+        }
     }
-  </script>
+
+    function changePage(delta) {
+        const newPage = currentPage + delta;
+        if (newPage < 1 || newPage > totalPages) return;
+        currentPage = newPage;
+        loadTasks();
+    }
+
+    function applyFilters() {
+        currentPage = 1;
+        loadTasks();
+    }
+
+    function resetFilters() {
+        document.getElementById('filterStatus').value = '';
+        document.getElementById('filterPriority').value = '';
+        document.getElementById('filterSearch').value = '';
+        currentPage = 1;
+        loadTasks();
+    }
+
+    async function updateStatus(taskId, newStatus) {
+        try {
+            await axios.patch(`${API_BASE}/tasks/${taskId}/status`, { status: newStatus });
+            loadTasks();
+        } catch (err) { alert("Erreur mise à jour du statut"); }
+    }
+
+    async function deleteTask(taskId) {
+        if (!confirm("Supprimer cette tâche ?")) return;
+        try {
+            await axios.delete(`${API_BASE}/tasks/${taskId}`);
+            const remaining = document.querySelectorAll('.task-item').length;
+            if (remaining === 1 && currentPage > 1) currentPage--;
+            loadTasks();
+        } catch (err) { alert("Erreur suppression"); }
+    }
+
+    function createTask() {
+        window.location.href = `task-form.html?projectId=${projectId}`;
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        window.location.href = 'index.html';
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+</script>
 </body>
 </html>

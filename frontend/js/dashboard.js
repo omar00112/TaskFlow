@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Chargement de toutes les données du tableau de bord en un seul appel Axios
 async function chargerTableauDeBord() {
   try {
-    const reponse = await axios.get("http://localhost:3000/api/dashboard"");
+    const reponse = await axios.get("http://localhost:3000/api/dashboard");
     const donnees = reponse.data;
 
     // Affichage des métriques dans les cartes statistiques
@@ -88,15 +88,13 @@ async function chargerProjets(filtres) {
     const listeProjets = document.getElementById('listeProjets');
 
     if (reponse.data.projects.length === 0) {
-      listeProjets.innerHTML = '<li>Aucun projet trouvé.</li>';
-    } else {
-      listeProjets.innerHTML = reponse.data.projects.map(p => `
-        <li>
-          <strong>${p.title}</strong> —
-          Statut : ${p.status}
-          ${p.description ? '— ' + p.description : ''}
-        </li>
-      `).join('');
+      l// Replace the old mapping line with this:
+listeProjets.innerHTML = reponse.data.projects.map(p => `
+  <li class="project-item" onclick="window.location.href='tasks.html?projectId=${p._id}'" style="cursor:pointer;">
+    <strong>${p.title}</strong> — Status: ${p.status}
+    <br><small>Click to view tasks</small>
+  </li>
+`).join('');
     }
   } catch (erreur) {
     console.error('Erreur lors du chargement des projets :', erreur);
@@ -136,3 +134,4 @@ function seDeconnecter() {
   delete axios.defaults.headers.common['Authorization'];
   window.location.href = 'index.html';
 }
+
