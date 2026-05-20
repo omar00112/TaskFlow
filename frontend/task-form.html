@@ -4,126 +4,228 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TaskFlow - Nouvelle tâche</title>
+    <link rel="stylesheet" href="style.css">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
-        h1 {
-            margin-top: 0;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input, textarea, select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            box-sizing: border-box;
-        }
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
         .draft-banner {
-            display: none;
             background-color: #fff3cd;
             border: 1px solid #ffeeba;
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 20px;
+            display: none;
         }
-        .btn-success {
-            background-color: #28a745;
-        }
-        .btn-success:hover {
-            background-color: #1e7e34;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-        }
-        .btn-danger:hover {
-            background-color: #b02a37;
-        }
+        .btn-success { background-color: #28a745; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-success:hover { background-color: #1e7e34; }
+        .btn-danger:hover { background-color: #b02a37; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1> Nouvelle tâche</h1>
+<div class="container" style="max-width: 600px;">
+    <h1>Nouvelle tâche</h1>
 
-        <div id="draftBanner" class="draft-banner">
-             Un brouillon non sauvegardé a été trouvé.
-            <button onclick="restoreDraft()" class="btn-success">Restaurer</button>
-            <button onclick="deleteDraft()" class="btn-danger">Ignorer</button>
+    <div id="draftBanner" class="draft-banner">
+        Un brouillon non sauvegardé a été trouvé.
+        <button onclick="restoreDraft()" class="btn-success">Restaurer</button>
+        <button onclick="deleteDraft()" class="btn-danger">Ignorer</button>
+    </div>
+
+    <form id="taskForm">
+        <div class="form-group">
+            <label>Titre *</label>
+            <input type="text" id="title" required>
         </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea id="description" rows="4"></textarea>
+        </div>
+        <div class="form-group">
+            <label>Priorité</label>
+            <select id="priority">
+                <option value="basse">Basse</option>
+                <option value="moyenne" selected>Moyenne</option>
+                <option value="haute">Haute</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Statut</label>
+            <select id="status">
+                <option value="à faire">À faire</option>
+                <option value="en cours">En cours</option>
+                <option value="terminé">Terminé</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Date limite (optionnel)</label>
+            <input type="date" id="dueDate">
+        </div>
+        <div class="form-group">
+            <label>Projet</label>
+            <input type="text" id="projectName" readonly disabled style="background-color:#f0f0f0">
+            <input type="hidden" id="projectIdInput">
+        </div>
+        <div class="form-group">
+            <label>Assigner à</label>
+            <select id="assignedTo">
+                <option value="">— Non assigné —</option>
+            </select>
+        </div>
+        <button type="submit">Créer la tâche</button>
+        <button type="button" onclick="window.history.back()">Annuler</button>
+    </form>
+</div>
 
-        <form id="taskForm">
-            <div class="form-group">
-                <label>Titre *</label>
-                <input type="text" id="title" required>
-            </div>
-            <div class="form-group">
-                <label>Description</label>
-                <textarea id="description" rows="4"></textarea>
-            </div>
-            <div class="form-group">
-                <label>Priorité</label>
-                <select id="priority">
-                    <option value="basse">Basse</option>
-                    <option value="moyenne" selected>Moyenne</option>
-                    <option value="haute">Haute</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Statut</label>
-                <select id="status">
-                    <option value="à faire">À faire</option>
-                    <option value="en cours">En cours</option>
-                    <option value="terminé">Terminé</option>
-                </select>
-            </div>
-                <!-- Champ caché pour stocker l'ID du projet -->
-    <input type="hidden" id="projectIdInput" value="">
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+    const API_BASE = 'http://localhost:3000/api';
+    let currentProjectId = null;
 
-    <!-- Affichage du nom du projet -->
-    <div class="form-group">
-        <label>Projet</label>
-        <input type="text" id="projectName" readonly disabled style="background-color:#f0f0f0">
-    </div>
-    <div class="form-group">
-      <label>Assigner à</label>
-      <select id="assignedTo">
-        <option value="">— Non assigné —</option>
-      </select>
-   </div>
+    function getQueryParam(param) {
+        return new URLSearchParams(window.location.search).get(param);
+    }
 
-    <button type="submit">Créer la tâche</button>
-        </form>
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="js/task-form.js"></script>
+    // Drafts
+    function getDraftKey() {
+        return 'task_draft_' + currentProjectId;
+    }
+
+    function saveDraft() {
+        const draft = {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            priority: document.getElementById('priority').value,
+            status: document.getElementById('status').value,
+            dueDate: document.getElementById('dueDate').value,
+            savedAt: new Date().toISOString()
+        };
+        if (!draft.title && !draft.description) return;
+        localStorage.setItem(getDraftKey(), JSON.stringify(draft));
+    }
+
+    function restoreDraft() {
+        const saved = localStorage.getItem(getDraftKey());
+        if (!saved) return;
+        const draft = JSON.parse(saved);
+        document.getElementById('title').value = draft.title;
+        document.getElementById('description').value = draft.description;
+        document.getElementById('priority').value = draft.priority;
+        document.getElementById('status').value = draft.status;
+        document.getElementById('dueDate').value = draft.dueDate || '';
+        document.getElementById('draftBanner').style.display = 'none';
+    }
+
+    function deleteDraft() {
+        localStorage.removeItem(getDraftKey());
+        document.getElementById('draftBanner').style.display = 'none';
+    }
+
+    function checkForDraft() {
+        if (localStorage.getItem(getDraftKey())) {
+            document.getElementById('draftBanner').style.display = 'block';
+        }
+    }
+
+    function setupAutoSave() {
+        ['title', 'description', 'priority', 'status', 'dueDate'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.addEventListener('input', saveDraft);
+                el.addEventListener('change', saveDraft);
+            }
+        });
+    }
+
+    // Load project info and members
+    async function loadProjectInfo() {
+        if (!currentProjectId) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_BASE}/projects/${currentProjectId}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            document.getElementById('projectName').value = res.data.title;
+            document.getElementById('projectIdInput').value = currentProjectId;
+        } catch (err) {
+            console.error('Erreur chargement projet:', err);
+        }
+    }
+
+    async function loadMembers() {
+        if (!currentProjectId) return;
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.get(`${API_BASE}/projects/${currentProjectId}/members`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const select = document.getElementById('assignedTo');
+            select.innerHTML = '<option value="">— Non assigné —</option>';
+            res.data.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member._id;
+                option.textContent = `${member.fullName} (${member.email})`;
+                select.appendChild(option);
+            });
+        } catch (err) {
+            console.error('Erreur chargement membres:', err);
+        }
+    }
+
+    // Submit
+    async function submitTask(e) {
+        e.preventDefault();
+        const title = document.getElementById('title').value.trim();
+        if (!title) {
+            alert("Le titre est obligatoire");
+            return;
+        }
+        const taskData = {
+            title,
+            description: document.getElementById('description').value,
+            priority: document.getElementById('priority').value,
+            status: document.getElementById('status').value,
+            dueDate: document.getElementById('dueDate').value || null,
+            project: currentProjectId,
+            assignedTo: document.getElementById('assignedTo').value || undefined
+        };
+        try {
+            const token = localStorage.getItem('token');
+            await axios.post(`${API_BASE}/tasks`, taskData, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            deleteDraft();
+            alert('✅ Tâche créée avec succès !');
+            window.location.href = `tasks.html?projectId=${currentProjectId}`;
+        } catch (err) {
+            alert('Erreur: ' + (err.response?.data?.message || err.message));
+        }
+    }
+
+    window.onload = () => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+            return;
+        }
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+
+        currentProjectId = getQueryParam('projectId');
+        if (!currentProjectId) {
+            alert("Aucun projet sélectionné");
+            window.location.href = 'dashboard.html';
+            return;
+        }
+
+        loadProjectInfo();
+        loadMembers();
+        setupAutoSave();
+        checkForDraft();
+
+        document.getElementById('taskForm').addEventListener('submit', submitTask);
+    };
+</script>
 </body>
 </html>

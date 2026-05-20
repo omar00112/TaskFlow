@@ -1,97 +1,382 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>TaskFlow — Tableau de bord</title>
-  <link rel="stylesheet" href="styleDashboard.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow - Tableau de bord</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .stats-row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            font-size: 14px;
+            color: #888;
+            margin-bottom: 10px;
+            border: none;
+        }
+        .stat-card p {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            color: #2c3e50;
+        }
+        .stat-card.late p { color: #e74c3c; }
+    </style>
 </head>
 <body>
-  <div class="container">
-
+<div class="container" style="max-width: 900px;">
     <div class="header-right">
-      <div class="notification-area">
-        <div id="notificationIcon" class="bell-icon">
-          🔔
-          <span id="notificationBadge" class="badge" style="display:none;">0</span>
+        <div class="notification-area">
+            <div id="notificationIcon" class="bell-icon">
+                🔔
+                <span id="notificationBadge" class="badge" style="display: none;">0</span>
+            </div>
+            <div id="notificationDropdown" class="dropdown">
+                <div class="dropdown-header">
+                    Notifications
+                    <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
+                </div>
+                <div id="notificationList" class="dropdown-list">
+                    <div class="notification-item">Aucune notification</div>
+                </div>
+            </div>
         </div>
-        <div id="notificationDropdown" class="dropdown">
-          <div class="dropdown-header">
-            Notifications
-            <button id="markAllReadBtn" class="mark-all-btn">Tout lire</button>
-          </div>
-          <div id="notificationList" class="dropdown-list">
-            <div class="notification-item">Aucune notification</div>
-          </div>
+        <button onclick="logout()" class="logout-btn">Se déconnecter</button>
+    </div>
+
+    <div class="welcome">
+        <h2>Bienvenue sur TaskFlow!</h2>
+        <p>Vous êtes maintenant connecté.</p>
+    </div>
+
+    <!-- Statistiques du tableau de bord (Feature #5) -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <h3>📁 Projets actifs</h3>
+            <p id="statProjetsActifs">-</p>
         </div>
-      </div>
-      <button onclick="seDeconnecter()" class="btn-logout">Se déconnecter</button>
+        <div class="stat-card">
+            <h3>✅ Tâches assignées</h3>
+            <p id="statTachesAssignees">-</p>
+        </div>
+        <div class="stat-card">
+            <h3>✔️ Tâches terminées</h3>
+            <p id="statTachesTerminees">-</p>
+        </div>
+        <div class="stat-card late">
+            <h3>⚠️ Tâches en retard</h3>
+            <p id="statTachesEnRetard">-</p>
+        </div>
     </div>
 
-    <h1>Tableau de bord</h1>
-
-    <!-- Cartes des métriques personnelles -->
-    <div class="dashboard-summary">
-      <div class="stat-card">
-        <h3>Projets actifs</h3>
-        <p id="compteurProjetsActifs">—</p>
-      </div>
-      <div class="stat-card">
-        <h3>Tâches assignées</h3>
-        <p id="compteurTachesAssignees">—</p>
-      </div>
-      <div class="stat-card">
-        <h3>Tâches terminées</h3>
-        <p id="compteurTachesTerminees">—</p>
-      </div>
-      <div class="stat-card retard">
-        <h3>Tâches en retard</h3>
-        <p id="compteurTachesEnRetard">—</p>
-      </div>
+    <!-- Navigation tabs -->
+    <div class="nav-tabs">
+        <button class="tab-btn active" onclick="showTab('projects')">📁 Projets</button>
+        <button class="tab-btn" onclick="showTab('tasks')">✅ Tâches</button>
+        <button class="tab-btn" onclick="showTab('members')">👥 Membres</button>
     </div>
 
-    <!-- Tâches en cours triées par priorité puis par date limite -->
-    <h2>Mes tâches en cours</h2>
-    <ul id="listeTachesEnCours"></ul>
-
-    <!-- Contrôles de filtrage des tâches -->
-    <h2>Mes tâches</h2>
-    <div class="filter-controls">
-      <input type="text" id="champRecherche" placeholder="Rechercher par titre ou description...">
-      <select id="filtreStatut">
-        <option value="">Tous les statuts</option>
-        <option value="à faire">À faire</option>
-        <option value="en cours">En cours</option>
-        <option value="terminé">Terminé</option>
-      </select>
-      <select id="filtrePriorite">
-        <option value="">Toutes les priorités</option>
-        <option value="haute">Haute</option>
-        <option value="moyenne">Moyenne</option>
-        <option value="basse">Basse</option>
-      </select>
-      <button id="boutonAppliquerFiltre">Filtrer</button>
-      <button id="boutonReinitialiser">Réinitialiser</button>
+    <!-- Projets -->
+    <div id="projectsTab" class="tab-content">
+        <div class="card">
+            <h3>📁 Projets</h3>
+            <div class="project-form">
+                <input type="text" id="newProjectTitle" placeholder="Titre du projet">
+                <button onclick="createProject()">Créer un projet</button>
+            </div>
+            <div id="projectsList" class="project-list"></div>
+        </div>
+        <div class="card">
+            <h3>📜 Historique des activités</h3>
+            <ul id="activity-list"></ul>
+        </div>
     </div>
-    <ul id="listeTachesFiltrees"></ul>
 
-    <!-- Contrôles de filtrage des projets -->
-    <h2>Mes projets</h2>
-    <div class="filter-controls">
-      <input type="text" id="rechercheProjet" placeholder="Rechercher un projet...">
-      <select id="filtreStatutProjet">
-        <option value="">Tous les statuts</option>
-        <option value="active">Actif</option>
-        <option value="paused">En pause</option>
-        <option value="archived">Archivé</option>
-      </select>
-      <button id="boutonFiltrerProjets">Filtrer</button>
+    <!-- Tâches -->
+    <div id="tasksTab" class="tab-content" style="display:none;">
+        <div class="card">
+            <h3>✅ Gestion des tâches</h3>
+            <p>Sélectionnez un projet pour voir ses tâches.</p>
+            <div id="projectSelectForTasks"></div>
+            <button id="goToTasksBtn" onclick="goToTasks()" style="display:none;">Voir les tâches</button>
+        </div>
     </div>
-    <ul id="listeProjets"></ul>
 
-  </div>
+    <!-- Membres -->
+    <div id="membersTab" class="tab-content" style="display:none;">
+        <div class="card">
+            <h3>👥 Gestion des membres</h3>
+            <div>
+                <label for="memberProjectSelect">Projet : </label>
+                <select id="memberProjectSelect">
+                    <option value="">-- Sélectionnez un projet --</option>
+                </select>
+                <button onclick="loadMembers()">Charger les membres</button>
+            </div>
+            <div id="membersList" style="margin-top: 20px;"></div>
+            <div style="margin-top: 15px;">
+                <h4>Inviter un nouveau membre</h4>
+                <input type="email" id="inviteEmail" placeholder="Email du membre" style="width: 70%;">
+                <button onclick="inviteMember()">Inviter</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="js/notifications.js"></script>
-  <script src="js/dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="js/notifications.js"></script>
+<script>
+    const API_BASE = 'http://localhost:3000/api';
+    let projects = [];
+
+    window.onload = function() {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'index.html';
+        }
+        axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+        loadDashboardStats();
+        loadProjects();
+    };
+
+    // Feature #5: Charger les statistiques du dashboard
+    async function loadDashboardStats() {
+        try {
+            const res = await axios.get(`${API_BASE}/dashboard`);
+            document.getElementById('statProjetsActifs').innerText = res.data.projetsActifs ?? 0;
+            document.getElementById('statTachesAssignees').innerText = res.data.tachesAssignees ?? 0;
+            document.getElementById('statTachesTerminees').innerText = res.data.tachesTerminees ?? 0;
+            document.getElementById('statTachesEnRetard').innerText = res.data.tachesEnRetard ?? 0;
+        } catch (err) {
+            console.error('Erreur chargement statistiques:', err);
+        }
+    }
+
+    function logout() {
+        localStorage.removeItem('token');
+        delete axios.defaults.headers.common['Authorization'];
+        window.location.href = 'index.html';
+    }
+
+    function showTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+        document.getElementById(tabName + 'Tab').style.display = 'block';
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        event.target.classList.add('active');
+
+        if (tabName === 'tasks') {
+            populateProjectSelect(tabName);
+        } else if (tabName === 'members') {
+            loadProjectSelectForMembers();
+        }
+    }
+
+    async function loadProjects() {
+        try {
+            const res = await axios.get(`${API_BASE}/projects`);
+            projects = res.data.projects || [];
+            const container = document.getElementById('projectsList');
+            if (projects.length === 0) {
+                container.innerHTML = '<p>Aucun projet. Créez-en un !</p>';
+                return;
+            }
+            container.innerHTML = projects.map(p => `
+                <div class="project-item">
+                    <span class="project-title">${escapeHtml(p.title)}</span>
+                    <div class="project-actions">
+                        <button onclick="editProject('${p._id}', '${escapeHtml(p.title)}')">✏️ Modifier</button>
+                        <button onclick="deleteProject('${p._id}')">🗑️ Supprimer</button>
+                        <button onclick="loadActivityFeed('${p._id}')">📜 Voir activités</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function createProject() {
+        const title = document.getElementById('newProjectTitle').value.trim();
+        if (!title) return alert("Veuillez entrer un titre");
+        try {
+            await axios.post(`${API_BASE}/projects`, { title, status: 'active' });
+            document.getElementById('newProjectTitle').value = '';
+            await loadProjects();
+            await loadDashboardStats(); // refresh stats
+        } catch (err) {
+            alert("Erreur lors de la création");
+        }
+    }
+
+    async function editProject(id, oldTitle) {
+        const newTitle = prompt("Nouveau titre", oldTitle);
+        if (!newTitle || newTitle === oldTitle) return;
+        try {
+            await axios.put(`${API_BASE}/projects/${id}`, { title: newTitle });
+            await loadProjects();
+        } catch (err) {
+            alert("Erreur modification");
+        }
+    }
+
+    async function deleteProject(id) {
+        if (!confirm("Supprimer ce projet ?")) return;
+        try {
+            await axios.delete(`${API_BASE}/projects/${id}`);
+            await loadProjects();
+            document.getElementById('activity-list').innerHTML = '';
+            await loadDashboardStats();
+        } catch (err) {
+            alert("Erreur suppression");
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    async function loadActivityFeed(projectId) {
+        try {
+            const res = await axios.get(`${API_BASE}/projects/${projectId}/activities`);
+            const list = document.getElementById('activity-list');
+            if (!res.data.length) {
+                list.innerHTML = '<li>Aucune activité.</li>';
+                return;
+            }
+            list.innerHTML = res.data.map(a => `<li>${formatActivity(a)}</li>`).join('');
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    const ACTION_LABELS = {
+        task_created: 'a créé la tâche',
+        task_deleted: 'a supprimé la tâche',
+        task_status_changed: 'a changé le statut de',
+        member_added: 'a ajouté un membre',
+        member_removed: 'a retiré un membre',
+        project_updated: 'a modifié le projet'
+    };
+
+    function timeAgo(dateStr) {
+        const diff = Math.floor((Date.now() - new Date(dateStr)) / 1000);
+        if (diff < 60) return 'à l\'instant';
+        if (diff < 3600) return `il y a ${Math.floor(diff / 60)} min`;
+        if (diff < 86400) return `il y a ${Math.floor(diff / 3600)} h`;
+        return `il y a ${Math.floor(diff / 86400)} j`;
+    }
+
+    function formatActivity(a) {
+        const name = a.user?.fullName || 'Quelqu\'un';
+        const action = ACTION_LABELS[a.type] || a.type;
+        const meta = a.meta || {};
+        let detail = '';
+        if (a.type === 'task_created' || a.type === 'task_deleted') detail = `"${meta.taskTitle}"`;
+        else if (a.type === 'task_status_changed') detail = `"${meta.taskTitle}" → ${meta.newStatus}`;
+        return `${name} ${action} ${detail} — ${timeAgo(a.createdAt)}`;
+    }
+
+    // For tasks tab
+    function populateProjectSelect(tab) {
+        const selectDiv = 'projectSelectForTasks';
+        const btnId = 'goToTasksBtn';
+        const container = document.getElementById(selectDiv);
+        if (!container) return;
+        if (!projects.length) {
+            container.innerHTML = '<p>Aucun projet.</p>';
+            document.getElementById(btnId).style.display = 'none';
+            return;
+        }
+        let html = '<select id="selectedProjectId">';
+        projects.forEach(p => { html += `<option value="${p._id}">${escapeHtml(p.title)}</option>`; });
+        html += '</select>';
+        container.innerHTML = html;
+        document.getElementById(btnId).style.display = 'inline-block';
+    }
+
+    function goToTasks() {
+        const projectId = document.getElementById('selectedProjectId')?.value;
+        if (projectId) window.location.href = `tasks.html?projectId=${projectId}`;
+        else alert("Veuillez sélectionner un projet");
+    }
+
+    // Members tab functions
+    function loadProjectSelectForMembers() {
+        const select = document.getElementById('memberProjectSelect');
+        if (!select) return;
+        select.innerHTML = '<option value="">-- Sélectionnez un projet --</option>';
+        projects.forEach(p => {
+            select.innerHTML += `<option value="${p._id}">${escapeHtml(p.title)}</option>`;
+        });
+    }
+
+    async function loadMembers() {
+        const projectId = document.getElementById('memberProjectSelect').value;
+        if (!projectId) {
+            alert("Veuillez sélectionner un projet");
+            return;
+        }
+        try {
+            const res = await axios.get(`${API_BASE}/projects/${projectId}/members`);
+            const members = res.data;
+            const container = document.getElementById('membersList');
+            if (!members.length) {
+                container.innerHTML = '<p>Aucun membre (seul le propriétaire).</p>';
+                return;
+            }
+            container.innerHTML = members.map(m => `
+                <div class="project-item" style="justify-content: space-between;">
+                    <span>${escapeHtml(m.fullName)} (${escapeHtml(m.email)})</span>
+                    <button onclick="removeMember('${projectId}', '${m._id}')" style="background:#e74c3c;">Retirer</button>
+                </div>
+            `).join('');
+        } catch (err) {
+            console.error(err);
+            alert("Erreur chargement membres");
+        }
+    }
+
+    async function inviteMember() {
+        const projectId = document.getElementById('memberProjectSelect').value;
+        const email = document.getElementById('inviteEmail').value.trim();
+        if (!projectId || !email) {
+            alert("Sélectionnez un projet et entrez un email");
+            return;
+        }
+        try {
+            await axios.post(`${API_BASE}/projects/${projectId}/members`, { email });
+            alert("Invitation envoyée");
+            document.getElementById('inviteEmail').value = '';
+            loadMembers();
+        } catch (err) {
+            alert(err.response?.data?.message || "Erreur lors de l'invitation");
+        }
+    }
+
+    async function removeMember(projectId, userId) {
+        if (!confirm("Retirer ce membre du projet ?")) return;
+        try {
+            await axios.delete(`${API_BASE}/projects/${projectId}/members/${userId}`);
+            alert("Membre retiré");
+            loadMembers();
+        } catch (err) {
+            alert(err.response?.data?.message || "Erreur");
+        }
+    }
+</script>
 </body>
 </html>
